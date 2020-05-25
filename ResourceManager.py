@@ -34,17 +34,17 @@ class ResourceManager:
     :returns: pygame audio
     '''
     def get_audio(file_path):
-        if not pg.mixer
+        if not pg.mixer:
             return None
 
         if file_path in self.audio:
             return self.audio[file_path]
         else:
             full_path = os.path.join(self.root_path, file_path)
-            if os.path.exists(full_path) and os.path.isfile(full_path)
+            if os.path.exists(full_path) and os.path.isfile(full_path):
                 sound = pg.mixer.Sound(file)
                 self.audio[file_path] = sound
                 return sound
             else:
-                print('[-] Could not load audio: {}'.format(full_path]))
+                print('[-] Could not load audio: {}'.format(full_path))
                 return None
