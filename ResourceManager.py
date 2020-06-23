@@ -3,8 +3,11 @@ import os
 import pygame as pygame
 
 class ResourceManager:
-    def __init__(self):
-        self.root_path = os.getcwd()
+    def __init__(self, root_path=None):
+        if not root_path:
+            self.root_path = os.getcwd()
+        else:
+            self.root_path = root_path
         self.images = {}
         self.audio = {}
 
@@ -15,13 +18,19 @@ class ResourceManager:
     :param file_path: image file path
     :returns: pygame image
     '''
-    def get_image(file_path):
+    def get_image(self, file_path):
+        if file_path.startswith(os.sep):
+            file_path = file_path[1:]
+
+        if not file_path.startswith("resources" + os.sep + "images"):
+            file_path = os.path.join('resources', 'images', file_path)
+
         if file_path in self.images:
             return self.images[file_path]
         else:
             full_path = os.path.join(self.root_path, file_path)
             if os.path.exists(full_path) and os.path.isfile(full_path):
-                surface = pg.image.load(file).convert()
+                surface = pygame.image.load(full_path).convert()
                 self.images[file_path] = surface
                 return surface
             else:
@@ -33,16 +42,22 @@ class ResourceManager:
     :param file_path: audio file path
     :returns: pygame audio
     '''
-    def get_audio(file_path):
-        if not pg.mixer:
+    def get_audio(self, file_path):
+        if not pygame.mixer:
             return None
+
+        if file_path.startswith(os.sep):
+            file_path = file_path[1:]
+
+        if not file_path.startswith("resources" + os.sep + "audio"):
+            file_path = os.path.join('resources', 'audio', file_path)
 
         if file_path in self.audio:
             return self.audio[file_path]
         else:
             full_path = os.path.join(self.root_path, file_path)
             if os.path.exists(full_path) and os.path.isfile(full_path):
-                sound = pg.mixer.Sound(file)
+                sound = pygame.mixer.Sound(full_path)
                 self.audio[file_path] = sound
                 return sound
             else:

@@ -9,20 +9,41 @@ class Component:
     :param w: the width
     :param h: the height
     '''
-    def __init__(self, x,y,w,h):
-        self.rect = pg.Rect(x,y,w,h)
+    def __init__(self, x,y,w,h, parent=None):
+
+        self.parent = parent
+        if self.parent:
+            self.rect = pg.Rect(x+self.parent.rect.x,y+self.parent.rect.y,w,h)
+            self.parent.add_child(self)
+        else:
+            self.rect = pg.Rect(x,y,w,h)
+            
         self.visible = True
         self.enabled = True
 
         # Always rendered in top left corner
         self.text = ""
-        self.text_font = None        
+        self.text_font = None
+        self.image = None
+        self.draw_outline = False
+        self.text_color = 0x0
 
-        self.parent = None
         self.children = []
 
         # Mapping (funcA -> funcB) where if funcA is true, then call funcB
         self.registered_events = {}
+
+    '''
+    Resize with width of the component relative to the parents width
+    '''
+    def resize_width_ratio(self, ratio):
+        self.rect.w = self.parent.rect.w * ratio
+
+    '''
+    Resize with height of the component relative to the parents height
+    '''
+    def resize_height_ratio(self, ratio):
+        self.rect.h = self.parent.rect.h * ratio
 
     '''
     Centers this component to ratio * parent's width relative to the parents x position
@@ -37,6 +58,18 @@ class Component:
     '''
     def center_y_percent(self, ratio):
         self.rect.y = self.parent.rect.y + (self.parent.rect.h*ratio) - (self.rect.h / 2)
+
+    '''
+    Get the relative x position based on a ratio of the width of this component
+    '''
+    def get_width_ratio(self, ratio):
+        return (self.rect.w * ratio) + self.rect.x
+
+    '''
+    Get the relative y position based on a ratio of the height of this component
+    '''
+    def get_height_ratio(self, ratio):
+        return (self.rect.h * ratio) + self.rect.y
 
     def update(self, game_ctxt):
         if not self.enabled:
@@ -53,16 +86,46 @@ class Component:
     def render(self, game_ctxt):
         if not self.visible:
             return
+
+        if self.image:
+            game_ctxt.screen.blit(self.image, (self.rect.x, self.rect.y))
+        
+        if len(self.text) > 0:
+            text_img = self.text_font.render(self.text, True, self.text_color)
+            text_w, text_h = self.text_font.size(self.text)
+            text_pos = (self.get_width_ratio(.5) - (text_w/2), self.get_height_ratio(.5) - (text_h/2))
+            game_ctxt.screen.blit(text_img, text_pos)
+
+        if self.draw_outline:
+            pg.draw.rect(game_ctxt.screen, 0x0, self.rect, 2)
+
         for child in self.children:
             child.render(game_ctxt)
 
-    def apply_to_children(self, func, recursive=True):
-        pass
+    def set_font(self, font_name, size=48):
+        self.text_font = pg.font.SysFont(font_name, size)
+
+    def add_child(self, child_component):
+        self.children.append(child_component)
+
+    '''
+    BDS-style apply a function to each child.
+    :param recursive: if True, apply function to children recursively
+    :param func: function to apply on children
+    :param kwargs: kwgars to func
+    '''
+    def apply_to_children(self, recursive, func, **kwarg):
+        for child in self.children:
+            func(child, kwarg)
+
+        if recursive:
+            for child in self.children:
+                child.apply_to_children(func, recursive, kwarg)
 
     '''
     Registers callbacks based on an event
-    :param event: Function that if it evaluates to true, then callback will be called
-    :param callback: The callback function to associate with the given event
+    :param event: Function that if it evaluates to true, then callback will be called like so: event(self, game_ctxt). see Actions class
+    :param callback: The callback function to associate with the given event. Is called like so: callback(self, game_ctxt)
     :returns: True if successful
     '''
     def register_event(self, event, callback):

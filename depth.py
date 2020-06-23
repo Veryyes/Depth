@@ -36,12 +36,36 @@ class Game:
         # Stateful variables about mouse movement & IO events
         self.mouse_rel = pg.mouse.get_rel()
         self.events = []
-
+        
         self.resources = ResourceManager()
 
         # Initialize Containers/Components/UI
-        self.main_menu = Component(SCREENRECT.x, SCREENRECT.y, SCREENRECT.w/2, SCREENRECT.h)
-        
+        self.main_menu = Component(SCREENRECT.x, SCREENRECT.y, SCREENRECT.w, SCREENRECT.h)
+        mm = self.main_menu
+        mm.image = self.resources.get_image("mm_back.png")
+        mm.set_font("broadway")
+        mm.text = "Depth"
+
+        mm_exit_btn = Component(0,0,0,0, parent=mm)
+        mm_exit_btn.resize_width_ratio(1/6)
+        mm_exit_btn.resize_height_ratio(1/10)
+        mm_exit_btn.center_x_percent(1/3)
+        mm_exit_btn.center_y_percent(3/4)
+        mm_exit_btn.set_font("calibri")
+        mm_exit_btn.text = "Quit"
+        mm_exit_btn.register_event(Actions.on_left_click, 
+                                    lambda c, gctxt: self.close())
+
+        mm_start_btn = Component(0,0,0,0, parent=mm)
+        mm_start_btn.resize_width_ratio(1/6)
+        mm_start_btn.resize_height_ratio(1/10)
+        mm_start_btn.center_x_percent(2/3)
+        mm_start_btn.center_y_percent(3/4)
+        mm_start_btn.set_font("calibri")
+        mm_start_btn.text = "Play"
+        mm_start_btn.register_event(Actions.on_left_click, 
+                                    lambda c, gctxt: print("Call code to go to next menu"))
+
         self.current_component = self.main_menu
     
     '''
@@ -54,7 +78,7 @@ class Game:
             self.events = pg.event.get()
             for event in self.events:
                 if event.type == pg.QUIT:
-                    exit(1)
+                    exit(0)
             # Get the relative movement (velocity vector) of the mouse position per frame
             self.mouse_rel = pg.mouse.get_rel()            
 
@@ -62,9 +86,12 @@ class Game:
             self.current_component.update(self)
             self.current_component.render(self)
 
+            pg.display.update()
             # Limit Game to 60 FPS
             clock.tick(60)
 
+    def close(self):
+        exit(0)
 
     '''
     Starts Depth
