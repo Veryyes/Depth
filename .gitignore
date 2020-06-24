@@ -1,2 +1,1 @@
-# Object Files
-*.o
+__pycache__/*
