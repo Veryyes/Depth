@@ -8,6 +8,7 @@ from ResourceManager import ResourceManager
 from Component import Component
 from Actions import Actions
 from MainMenu import MainMenu
+from SongPlayer import SongPlayer
 
 FULLSCREEN = 0
 SCREENRECT = pg.Rect(0, 0, 640, 480)
@@ -43,10 +44,20 @@ class Game:
 
         # Initialize Containers/Components/UI
         self.main_menu = MainMenu(self)
-        self.song_player = None
+        self.song_player = SongPlayer(self)
+        self.song_builder = None
 
         self.current_component = self.main_menu
     
+    def change_to_main_menu(self):
+        self.current_component = self.main_menu
+
+    def change_to_song_player(self):
+        self.current_component = self.song_player
+
+    def change_to_song_builder(self):
+        self.current_component = self.song_builder
+
     '''
     Main Game Loop
     '''

@@ -21,9 +21,11 @@ class Component:
         self.visible = True
         self.enabled = True
 
-        # Always rendered in top left corner
         self.text = ""
         self.text_font = None
+        self.font_name = ""
+        self.font_size = 48
+
         self.image = None
         self.draw_outline = False
         self.text_color = 0x0
@@ -49,16 +51,40 @@ class Component:
     Centers this component to ratio * parent's width relative to the parents x position
     :param ratio: the percentage of the parent's width the component should be centered to
     '''
-    def center_x_percent(self, ratio):
+    def center_x_ratio(self, ratio):
         self.rect.x = self.parent.rect.x + (self.parent.rect.w*ratio) - (self.rect.w / 2)
                 
     '''
     Centers this component to ratio * parent's height relative to the parents y position
     :param ratio: the percentage of the parent's height the component should be centered to
     '''
-    def center_y_percent(self, ratio):
+    def center_y_ratio(self, ratio):
         self.rect.y = self.parent.rect.y + (self.parent.rect.h*ratio) - (self.rect.h / 2)
 
+    '''
+    Flushes component to the left side of the parent
+    '''
+    def flush_left(self):
+        self.rect.x = self.parent.rect.x
+
+    '''
+    Flushes component to the right side of the parent
+    '''
+    def flush_right(self):
+        self.rect.x = self.parent.rect.x + self.parent.rect.w - self.rect.w 
+    
+    '''
+    Flushes component to the top side of the parent
+    '''
+    def flush_top(self):
+        self.rect.y = self.parent.rect.y
+    
+    '''
+    Flushes component to the bottom side of the parent
+    '''
+    def flush_bottom(self):
+        self.rect.y = self.parent.rect.y + self.parent.rect.h - self.rect.h
+    
     '''
     Get the relative x position based on a ratio of the width of this component
     '''
@@ -78,7 +104,11 @@ class Component:
         for reg_events in self.registered_events:
             # reg_event is the key and also a function that evauluates true if the event should be fired
             if reg_events(self, game_ctxt):
-                self.registered_events[reg_events](self, game_ctxt)
+                member_func, callback = self.registered_events[reg_events]
+                if member_func:
+                    callback(game_ctxt)
+                else:
+                    callback(self, game_ctxt)
 
         for child in self.children:
             child.update(game_ctxt)
@@ -91,10 +121,8 @@ class Component:
             game_ctxt.screen.blit(self.image, (self.rect.x, self.rect.y))
         
         if len(self.text) > 0:
-            text_img = self.text_font.render(self.text, True, self.text_color)
-            text_w, text_h = self.text_font.size(self.text)
-            text_pos = (self.get_width_ratio(.5) - (text_w/2), self.get_height_ratio(.5) - (text_h/2))
-            game_ctxt.screen.blit(text_img, text_pos)
+            text_pos = (self.get_width_ratio(.5) - (self.text_w/2), self.get_height_ratio(.5) - (self.text_h/2))
+            game_ctxt.screen.blit(self.text_img, text_pos)
 
         if self.draw_outline:
             pg.draw.rect(game_ctxt.screen, 0x0, self.rect, 2)
@@ -102,14 +130,58 @@ class Component:
         for child in self.children:
             child.render(game_ctxt)
 
+    '''
+    Set the font style and size
+    :param font_name: name of the font style (a system default one will be picked if no match)
+    :param size: (Optional) The size of the font
+    '''
     def set_font(self, font_name, size=48):
-        self.text_font = pg.font.SysFont(font_name, size)
+        if type(size) == float:
+            size = int(size)
 
-    def add_child(self, child_component):
-        self.children.append(child_component)
+        self.text_font = pg.font.SysFont(font_name, size)
+        self.font_name = font_name
+        self.font_size = size
 
     '''
-    BDS-style apply a function to each child.
+    Returns the font size. Only mutate self.font_size via self.set_font
+    :returns: font size
+    '''
+    def get_font_size(self):
+        return self.font_size
+
+    '''
+    Returns the font style. Only mutate self.font_style via self.set_font
+    :returns: font style
+    '''
+    def get_font_name(self):
+        return self.font_name
+
+    '''
+    Set the text to render in the center of the component. Rebuilds rendered text image
+    :param text: The text to render
+    :param allow_resize: (Optional) If true, increase the component's dimensions to fit the text
+    '''
+    def set_text(self, text, allow_resize=False):
+        self.text = text
+        self.text_img = self.text_font.render(self.text, True, self.text_color)
+        self.text_w, self.text_h = self.text_font.size(self.text)
+        if allow_resize:
+            if self.text_w > self.rect.w:
+                self.rect.w = self.text_w
+            if self.text_h > self.rect.h:
+                self.rect.h = self.text_h
+
+    '''
+    Adds a child component
+    :param child_component: The child component to add
+    '''
+    def add_child(self, child_component):
+        self.children.append(child_component)
+        child_component.parent = self
+
+    '''
+    BFS-style apply a function to each child.
     :param recursive: if True, apply function to children recursively
     :param func: function to apply on children
     :param kwargs: kwgars to func
@@ -124,11 +196,17 @@ class Component:
 
     '''
     Registers callbacks based on an event
+
+    The callback function will be run with self and game_ctxt as the parameters
+    Thus, the callback function given should only take two parameters, Although member functions of a class insert a reference
+    to themselves as the first parameter.
+                
     :param event: Function that if it evaluates to true, then callback will be called like so: event(self, game_ctxt). see Actions class
     :param callback: The callback function to associate with the given event. Is called like so: callback(self, game_ctxt)
+    :param member_func: (Optional) Set to True if the callback is a member_function. If True, the callback function will be called like so instead: callback(game_ctxt)
     :returns: True if successful
     '''
-    def register_event(self, event, callback):
+    def register_event(self, event, callback, member_func=False):
         if not callable(event):
             print('[-] Event is not a function. Must be a function that evalutes to a boolean value')
             return False
@@ -136,8 +214,8 @@ class Component:
         if not callable(callback):
             print('[-] Callback registered for {} is not callable'.format(event))
             return False
-
-        self.registered_events[event] = callback
+    
+        self.registered_events[event] = (member_func, callback)
         return True
     
     '''
