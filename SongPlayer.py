@@ -10,6 +10,7 @@ class SongPlayer(Component):
         Component.__init__(self, gctxt.screen_rect.x, gctxt.screen_rect.y, gctxt.screen_rect.w, gctxt.screen_rect.h)
         
         self.song_queue = queue.Queue() # Thread Safe Queue
+        # Cant peek a queue.Queue(), so just store the current and next here
         self.current_song = None
         self.next_song = None
 

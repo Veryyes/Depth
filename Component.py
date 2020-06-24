@@ -10,7 +10,6 @@ class Component:
     :param h: the height
     '''
     def __init__(self, x,y,w,h, parent=None):
-
         self.parent = parent
         if self.parent:
             self.rect = pg.Rect(x+self.parent.rect.x,y+self.parent.rect.y,w,h)
@@ -131,6 +130,47 @@ class Component:
             child.render(game_ctxt)
 
     '''
+    Disables all children.
+    :param recursive: (Optional) apply to all descendants
+    '''
+    def disable_children(self, recursive=False): # LOL
+        for child in self.children:
+            child.enabled = False
+            if recursive:
+                child.disable_children(recursive=recursive)
+
+    '''
+    Sets all children to be not visible.
+    :param recursive: (Optional) apply to all descendants
+    '''
+    def hide_children(self, recursive=False): #Hide yo kids
+        for child in self.children:
+            child.visible = False
+            if recursive:
+                child.hide_children(recursive=recursive)
+
+    
+    '''
+    Enables all children
+    :param recursive: (Optional) apply to all descendants
+    '''
+    def enable_children(self, recursive=False):
+        for child in self.children:
+            child.enabled = False
+            if recursive:
+                child.enable_children(recursive=recursive)
+
+    '''
+    Shows all children
+    :param recursive: (Optional) apply to all descendants
+    '''
+    def show_children(self, recursive=False):
+        for child in self.children:
+            child.visible = False
+            if recursive:
+                child.show_children(recursive=recursive)
+
+    '''
     Set the font style and size
     :param font_name: name of the font style (a system default one will be picked if no match)
     :param size: (Optional) The size of the font
@@ -161,9 +201,12 @@ class Component:
     Set the text to render in the center of the component. Rebuilds rendered text image
     :param text: The text to render
     :param allow_resize: (Optional) If true, increase the component's dimensions to fit the text
+    :param color: (Optional) the color to set the text to
     '''
-    def set_text(self, text, allow_resize=False):
+    def set_text(self, text, allow_resize=False, color=None):
         self.text = text
+        if color:
+            self.text_color = color
         self.text_img = self.text_font.render(self.text, True, self.text_color)
         self.text_w, self.text_h = self.text_font.size(self.text)
         if allow_resize:
@@ -171,6 +214,14 @@ class Component:
                 self.rect.w = self.text_w
             if self.text_h > self.rect.h:
                 self.rect.h = self.text_h
+
+    '''
+    Sets the text color
+    :param color: The color to set the text to
+    '''
+    def set_text_color(self, color):
+        self.set_text(self.text, color=color)
+
 
     '''
     Adds a child component

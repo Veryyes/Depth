@@ -9,6 +9,7 @@ from Component import Component
 from Actions import Actions
 from MainMenu import MainMenu
 from SongPlayer import SongPlayer
+from SongBuilder import SongBuilder
 
 FULLSCREEN = 0
 SCREENRECT = pg.Rect(0, 0, 640, 480)
@@ -45,7 +46,7 @@ class Game:
         # Initialize Containers/Components/UI
         self.main_menu = MainMenu(self)
         self.song_player = SongPlayer(self)
-        self.song_builder = None
+        self.song_builder = SongBuilder(self)
 
         self.current_component = self.main_menu
     
