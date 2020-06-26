@@ -4,12 +4,12 @@ import os
 
 import pygame as pg
 
-from ResourceManager import ResourceManager
 from Component import Component
 from Actions import Actions
 from MainMenu import MainMenu
 from SongPlayer import SongPlayer
 from SongBuilder import SongBuilder
+from Song import Song
 
 FULLSCREEN = 0
 SCREENRECT = pg.Rect(0, 0, 640, 480)
@@ -40,12 +40,12 @@ class Game:
         # Stateful variables about mouse movement & IO events
         self.mouse_rel = pg.mouse.get_rel()
         self.events = []
-        
-        self.resources = ResourceManager()
 
         # Initialize Containers/Components/UI
         self.main_menu = MainMenu(self)
-        self.song_player = SongPlayer(self)
+
+        self.song_player = SongPlayer(self, current_song = "Niji no Kanata ni.ogg")
+        
         self.song_builder = SongBuilder(self)
 
         self.current_component = self.main_menu

@@ -2,11 +2,12 @@ import pygame as pg
 
 from Component import Component
 from Actions import Actions
+import ResourceManager
 
 class MainMenu(Component):
     def __init__(self, gctxt):
         Component.__init__(self, gctxt.screen_rect.x, gctxt.screen_rect.y, gctxt.screen_rect.w, gctxt.screen_rect.h)
-        self.image = gctxt.resources.get_image("mm_back.png")
+        self.image = ResourceManager.get_image("mm_back.png")
         self.set_font('broadway')
         self.set_text("Depth")
 

@@ -27,7 +27,7 @@ class Component:
 
         self.image = None
         self.draw_outline = False
-        self.text_color = 0x0
+        self.text_color = (0,0,0)
 
         self.children = []
 
@@ -204,9 +204,14 @@ class Component:
     :param color: (Optional) the color to set the text to
     '''
     def set_text(self, text, allow_resize=False, color=None):
-        self.text = text
+        if not text:
+            self.text = ""
+        else:
+            self.text = text
+
         if color:
             self.text_color = color
+
         self.text_img = self.text_font.render(self.text, True, self.text_color)
         self.text_w, self.text_h = self.text_font.size(self.text)
         if allow_resize:
