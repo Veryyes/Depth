@@ -26,6 +26,14 @@ class Actions:
     def on_mouse_enter(component, game_ctxt):
         return component.mouse_entered(game_ctxt)
 
+    @staticmethod
+    def on_mouse_exit_family(component, game_ctxt):
+        return component.mouse_exited_family(game_ctxt)
+
+    @staticmethod
+    def on_mouse_enter_family(component, game_ctxt):
+        return component.mouse_entered_family(game_ctxt)
+
 '''
 what the <strong>fuk</strong> is going on here?
 

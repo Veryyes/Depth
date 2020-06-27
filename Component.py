@@ -1,3 +1,5 @@
+import uuid
+
 import pygame as pg
 
 from Actions import Actions
@@ -12,6 +14,8 @@ class Component:
     :param h: the height
     '''
     def __init__(self, x=0,y=0,w=0,h=0, parent=None):
+        self.uuid = uuid.uuid4()
+
         self.parent = parent
         if self.parent:
             self.rect = pg.Rect(x+self.parent.rect.x,y+self.parent.rect.y,w,h)
@@ -357,40 +361,6 @@ class Component:
                 child.apply_to_children(func, recursive, kwarg)
 
     '''
-    Add a DropDownMenu Component
-    :param dropdown: the DropDownMenu object
-    '''
-    def add_dropdown(self, dropdown):
-        dropdown.parent = self
-        if dropdown not in self.children:
-            self.children.append(dropdown)
-
-        dropdown.visible=False
-        dropdown.enabled=False
-        dropdown.rect.x = self.rect.x
-        dropdown.rect.y = self.get_bottom_edge()
-    
-        def show(c, gctxt, dropdown=dropdown):
-            dropdown.visible=True
-            dropdown.enabled=True
-            dropdown.enable_and_show_children(recursive=True)
-
-        def hide(c, gctxt, dropdown=dropdown):
-            dropdown.visible=False
-            dropdown.enabled=False
-            c.disable_and_hide_children(recursive=True)
-
-        self.register_event(
-            Actions.on_mouse_enter, 
-            show
-        )
-
-        self.register_event(
-            Actions.on_mouse_exit,
-            hide
-        )
-
-    '''
     Registers callbacks based on an event
 
     The callback function will be run with self and game_ctxt as the parameters
@@ -537,6 +507,36 @@ class Component:
         outside_before = not self.rect.collidepoint(x-x_vel, y-y_vel)
         inside_after = self.rect.collidepoint(x,y) == 1
         return outside_before and inside_after
+
+    def mouse_exited_family(self, game_ctxt):
+        x, y = pg.mouse.get_pos()
+        x_vel, y_vel = game_ctxt.mouse_rel
+
+        prev_x = x-x_vel
+        prev_y = y-y_vel
+
+        family = [child for child in self.children]
+        family.append(self)
+
+        one_inside_before = any([member.rect.collidepoint(prev_x, prev_y)==1 for member in family])
+        all_outside_after = all([not member.rect.collidepoint(x, y) for member in family])
+
+        return one_inside_before and all_outside_after
+
+    def mouse_entered_family(self, game_ctxt):
+        x, y = pg.mouse.get_pos()
+        x_vel, y_vel = game_ctxt.mouse_rel
+
+        prev_x = x-x_vel
+        prev_y = y-y_vel
+
+        family = [child for child in self.children]
+        family.append(self)
+
+        all_outside_before = all([not member.rect.collidepoint(prev_x, prev_y) for member in family])
+        one_inside_after = any([member.rect.collidepoint(x, y)==1 for member in family])
+
+        return all_outside_before and one_inside_after
 
     '''
     Evalutes whether or not keyboard button key is pressed

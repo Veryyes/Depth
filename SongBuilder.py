@@ -28,9 +28,8 @@ class SongBuilder(Component):
         self.tool_bar.resize_height_ratio(1/24)
         self.tool_bar.set_background_color((86, 86, 86))
         
-        padding = 8
+        padding = 16
         font_scale = gctxt.screen_diagonal()/50
-        print(font_scale)
 
         ###### FILE MENU ######
         self.file_btn = Component(parent=self.tool_bar)
@@ -43,7 +42,6 @@ class SongBuilder(Component):
 
         file_menu = DropDownMenu(self.file_btn)
         file_menu.set_background_color((128,128,128))
-        self.file_btn.add_dropdown(file_menu)    
         
         #new, open, recent, close
         new_btn = Component(parent=file_menu)
@@ -73,10 +71,9 @@ class SongBuilder(Component):
         self.edit_btn.rect.x = self.file_btn.get_right_edge() + padding
         self.edit_btn.set_font("calibri", size=font_scale)
         self.edit_btn.set_text("Edit", allow_resize=True)
-        
+
         edit_menu = DropDownMenu(self.edit_btn)
         edit_menu.set_background_color((128,128,128))
-        self.edit_btn.add_dropdown(edit_menu)
 
         # Undo, Redo, Cut, Delete, Copy, Paste
         undo_btn = Component(parent=edit_menu)   
@@ -122,22 +119,6 @@ class SongBuilder(Component):
 
         self.tool_bar.apply_to_children(False, 
             lambda child, kwargs: child.register_event(Actions.on_mouse_exit, lambda c, gctxt: c.set_background_color(c.parent.background_color)))
-
-    def show_file_menu(self, gctxt):
-        self.file_btn.enable_children(recursive=True)
-        self.file_btn.show_children(recursive=True)        
-
-    def hide_file_menu(self, gctxt):
-        self.file_btn.disable_children(recursive=True)
-        self.file_btn.hide_children(recursive=True)
-    
-    def show_edit_menu(self, gctxt):
-        self.edit_btn.enable_children(recursive=True)
-        self.edit_btn.show_children(recursive=True)        
-
-    def hide_edit_menu(self, gctxt):
-        self.edit_btn.disable_children(recursive=True)
-        self.edit_btn.hide_children(recursive=True)
 
 
     def exit_to_main_menu(self, gctxt):
