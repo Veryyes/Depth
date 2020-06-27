@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import math
 
 import pygame as pg
 
@@ -80,6 +81,11 @@ class Game:
             pg.display.update()
             # Limit Game to 60 FPS
             clock.tick(60)
+
+    def screen_diagonal(self):
+        w = self.screen_rect.w
+        h = self.screen_rect.h
+        return math.sqrt(w*w + h*h)
 
     def close(self):
         exit(0)

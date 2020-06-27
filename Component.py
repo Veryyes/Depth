@@ -1,5 +1,7 @@
 import pygame as pg
 
+from Actions import Actions
+
 class Component:
     
     '''
@@ -9,7 +11,7 @@ class Component:
     :param w: the width
     :param h: the height
     '''
-    def __init__(self, x,y,w,h, parent=None):
+    def __init__(self, x=0,y=0,w=0,h=0, parent=None):
         self.parent = parent
         if self.parent:
             self.rect = pg.Rect(x+self.parent.rect.x,y+self.parent.rect.y,w,h)
@@ -21,13 +23,18 @@ class Component:
         self.enabled = True
 
         self.text = ""
-        self.text_font = None
+        self.text_font = self.parent.text_font if self.parent else ""
         self.font_name = ""
-        self.font_size = 48
+        self.font_size = self.parent.font_size if self.parent else 48
+        self.text_color = (0,0,0)
 
         self.image = None
+        self.background = False
+        self.background_color = self.parent.background_color if self.parent else (0, 0, 0)
+
         self.draw_outline = False
-        self.text_color = (0,0,0)
+        self.outline_color = 0x0
+        self.outline_thiccness = 2
 
         self.children = []
 
@@ -35,54 +42,104 @@ class Component:
         self.registered_events = {}
 
     '''
-    Resize with width of the component relative to the parents width
+    Resize with width of the component relative to the parents or a components width
     '''
-    def resize_width_ratio(self, ratio):
-        self.rect.w = self.parent.rect.w * ratio
+    def resize_width_ratio(self, ratio, component=None):
+        if not component:
+            self.rect.w = self.parent.rect.w * ratio
+        else:
+            self.rect.w = component.rect.w * ratio
 
     '''
-    Resize with height of the component relative to the parents height
+    Resize with height of the component relative to the parents or a components height
     '''
-    def resize_height_ratio(self, ratio):
-        self.rect.h = self.parent.rect.h * ratio
+    def resize_height_ratio(self, ratio, component=None):
+        if not component:
+            self.rect.h = self.parent.rect.h * ratio
+        else:
+            self.rect.h = component.rect.h * ratio
+
+    '''
+    Resize component based on larges child
+    '''
+    def resize_on_children(self):
+        self.resize_width_on_children()
+        self.resize_height_on_children()
+
+    '''
+    Resize width of component based on largest child
+    '''
+    def resize_width_on_children(self):
+        max_w = max([child.rect.w for child in self.children])
+        self.rect.w = max_w
+
+    '''
+    Resize height of component based on largest child
+    '''
+    def resize_height_on_children(self):
+        max_h = max([child.rect.h for child in self.children])
+        self.rect.h = max_h
 
     '''
     Centers this component to ratio * parent's width relative to the parents x position
     :param ratio: the percentage of the parent's width the component should be centered to
     '''
-    def center_x_ratio(self, ratio):
-        self.rect.x = self.parent.rect.x + (self.parent.rect.w*ratio) - (self.rect.w / 2)
+    def center_x_ratio(self, ratio, component=None):
+        if not component:
+            self.rect.x = self.parent.rect.x + (self.parent.rect.w*ratio) - (self.rect.w / 2)
+        else:
+            self.rect.x = component.rect.x + (component.rect.w*ratio) - (self.rect.w / 2)
                 
     '''
     Centers this component to ratio * parent's height relative to the parents y position
     :param ratio: the percentage of the parent's height the component should be centered to
     '''
-    def center_y_ratio(self, ratio):
-        self.rect.y = self.parent.rect.y + (self.parent.rect.h*ratio) - (self.rect.h / 2)
+    def center_y_ratio(self, ratio, component=None):
+        if not component:
+            self.rect.y = self.parent.rect.y + (self.parent.rect.h*ratio) - (self.rect.h / 2)
+        else:
+            self.rect.y = component.rect.y + (component.rect.h*ratio) - (self.rect.h / 2)
 
     '''
-    Flushes component to the left side of the parent
+    Flushes component to the left side of the parent, or to the other component specified
+    :param component: (Optional) Component to do operation relative to
     '''
-    def flush_left(self):
-        self.rect.x = self.parent.rect.x
+    def flush_left(self, component=None):
+        if not component:
+            self.rect.x = self.parent.rect.x
+        else:
+            self.rect.x = component.rect.x
 
     '''
-    Flushes component to the right side of the parent
+    Flushes component to the right side of the parent, or to the other component specified
+    :param component: (Optional) Component to do operation relative to
     '''
-    def flush_right(self):
-        self.rect.x = self.parent.rect.x + self.parent.rect.w - self.rect.w 
+    def flush_right(self, component=None):
+        if not component:
+            self.rect.x = self.parent.rect.x + self.parent.rect.w - self.rect.w 
+        else:
+            self.rect.x = component.rect.x + component.rect.w - self.rect.w 
     
     '''
-    Flushes component to the top side of the parent
+    Flushes component to the top side of the parent, or to the other component specified
+    :param component: (Optional) Component to do operation relative to
     '''
-    def flush_top(self):
-        self.rect.y = self.parent.rect.y
+    def flush_top(self, component=None):
+        if not component:
+            self.rect.y = self.parent.rect.y
+        else:
+            self.rect.y = component.rect.y
+
     
     '''
-    Flushes component to the bottom side of the parent
+    Flushes component to the bottom side of the parent, or to the other component specified
+    :param component: (Optional) Component to do operation relative to
     '''
-    def flush_bottom(self):
-        self.rect.y = self.parent.rect.y + self.parent.rect.h - self.rect.h
+    def flush_bottom(self, component=None):
+        if not component:
+            self.rect.y = self.parent.rect.y + self.parent.rect.h - self.rect.h
+        else:
+            self.rect.y = component.rect.y + component.rect.h - self.rect.h
     
     '''
     Get the relative x position based on a ratio of the width of this component
@@ -103,11 +160,12 @@ class Component:
         for reg_events in self.registered_events:
             # reg_event is the key and also a function that evauluates true if the event should be fired
             if reg_events(self, game_ctxt):
-                member_func, callback = self.registered_events[reg_events]
-                if member_func:
-                    callback(game_ctxt)
-                else:
-                    callback(self, game_ctxt)
+                for event in self.registered_events[reg_events]:
+                    member_func, callback = event
+                    if member_func:
+                        callback(game_ctxt)
+                    else:
+                        callback(self, game_ctxt)
 
         for child in self.children:
             child.update(game_ctxt)
@@ -116,18 +174,35 @@ class Component:
         if not self.visible:
             return
 
+        # If a solid background color has been specified, render it
+        if self.background:
+            background = pg.Surface((self.rect.w, self.rect.h))
+            background.fill(self.background_color)
+            game_ctxt.screen.blit(background, (self.rect.x, self.rect.y))
+
+        # If an image has been given, render it
         if self.image:
             game_ctxt.screen.blit(self.image, (self.rect.x, self.rect.y))
         
+        # If theres text, render it
         if len(self.text) > 0:
             text_pos = (self.get_width_ratio(.5) - (self.text_w/2), self.get_height_ratio(.5) - (self.text_h/2))
             game_ctxt.screen.blit(self.text_img, text_pos)
 
+        # If you wanna draw the outline, draw it
         if self.draw_outline:
-            pg.draw.rect(game_ctxt.screen, 0x0, self.rect, 2)
+            pg.draw.rect(game_ctxt.screen, self.outline_color, self.rect, self.outline_thiccness)
 
         for child in self.children:
             child.render(game_ctxt)
+
+    '''
+    Sets the background color of the component to a solid color
+    :param color: pygame color
+    '''
+    def set_background_color(self, color):
+        self.background = True
+        self.background_color = color
 
     '''
     Disables all children.
@@ -156,7 +231,7 @@ class Component:
     '''
     def enable_children(self, recursive=False):
         for child in self.children:
-            child.enabled = False
+            child.enabled = True
             if recursive:
                 child.enable_children(recursive=recursive)
 
@@ -166,9 +241,25 @@ class Component:
     '''
     def show_children(self, recursive=False):
         for child in self.children:
-            child.visible = False
+            child.visible = True
             if recursive:
                 child.show_children(recursive=recursive)
+
+    '''
+    Shows and Enables all children
+    :param recursive: (Optional) apply to all descendants
+    '''
+    def enable_and_show_children(self, recursive=False):
+        self.enable_children(recursive=recursive)
+        self.show_children(recursive=recursive)
+
+    '''
+    Hide and disable all children
+    :param recursive: (Optional) apply to all descendants
+    '''
+    def disable_and_hide_children(self, recursive=False):
+        self.disable_children(recursive=recursive)
+        self.hide_children(recursive=recursive)
 
     '''
     Set the font style and size
@@ -220,6 +311,7 @@ class Component:
             if self.text_h > self.rect.h:
                 self.rect.h = self.text_h
 
+
     '''
     Sets the text color
     :param color: The color to set the text to
@@ -227,13 +319,27 @@ class Component:
     def set_text_color(self, color):
         self.set_text(self.text, color=color)
 
+    '''
+    Returns the X coordinate of the right edge
+    :returns: X coordinate of right edge
+    '''
+    def get_right_edge(self):
+        return self.rect.x + self.rect.w
+
+    '''
+    Returns the Y coordinate of the bottom edge
+    :returns: Y coordinate of bottom edge
+    '''
+    def get_bottom_edge(self):
+        return self.rect.y + self.rect.h
 
     '''
     Adds a child component
     :param child_component: The child component to add
     '''
     def add_child(self, child_component):
-        self.children.append(child_component)
+        if not child_component in self.children:
+            self.children.append(child_component)
         child_component.parent = self
 
     '''
@@ -249,6 +355,40 @@ class Component:
         if recursive:
             for child in self.children:
                 child.apply_to_children(func, recursive, kwarg)
+
+    '''
+    Add a DropDownMenu Component
+    :param dropdown: the DropDownMenu object
+    '''
+    def add_dropdown(self, dropdown):
+        dropdown.parent = self
+        if dropdown not in self.children:
+            self.children.append(dropdown)
+
+        dropdown.visible=False
+        dropdown.enabled=False
+        dropdown.rect.x = self.rect.x
+        dropdown.rect.y = self.get_bottom_edge()
+    
+        def show(c, gctxt, dropdown=dropdown):
+            dropdown.visible=True
+            dropdown.enabled=True
+            dropdown.enable_and_show_children(recursive=True)
+
+        def hide(c, gctxt, dropdown=dropdown):
+            dropdown.visible=False
+            dropdown.enabled=False
+            c.disable_and_hide_children(recursive=True)
+
+        self.register_event(
+            Actions.on_mouse_enter, 
+            show
+        )
+
+        self.register_event(
+            Actions.on_mouse_exit,
+            hide
+        )
 
     '''
     Registers callbacks based on an event
@@ -270,8 +410,12 @@ class Component:
         if not callable(callback):
             print('[-] Callback registered for {} is not callable'.format(event))
             return False
-    
-        self.registered_events[event] = (member_func, callback)
+
+        if not self.registered_events.get(event, None):
+            self.registered_events[event] = [(member_func, callback)]
+        else:
+            self.registered_events[event].append((member_func, callback))
+
         return True
     
     '''

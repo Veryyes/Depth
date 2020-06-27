@@ -11,7 +11,7 @@ class MainMenu(Component):
         self.set_font('broadway')
         self.set_text("Depth")
 
-        self.exit_btn = Component(0,0,0,0, parent=self)
+        self.exit_btn = Component(parent=self)
         self.exit_btn.resize_width_ratio(1/6)
         self.exit_btn.resize_height_ratio(1/10)
         self.exit_btn.center_x_ratio(1/4)
@@ -21,7 +21,7 @@ class MainMenu(Component):
         self.exit_btn.register_event(Actions.on_left_click, 
                                     lambda c, gctxt: gctxt.close())
 
-        self.start_btn = Component(0,0,0,0, parent=self)
+        self.start_btn = Component(parent=self)
         self.start_btn.resize_width_ratio(1/6)
         self.start_btn.resize_height_ratio(1/10)
         self.start_btn.center_x_ratio(1/2)
@@ -31,7 +31,7 @@ class MainMenu(Component):
         self.start_btn.register_event(Actions.on_left_click, 
                                     lambda c, gctxt: gctxt.change_to_song_player())
 
-        self.build_btn = Component(0,0,0,0, parent=self)
+        self.build_btn = Component(parent=self)
         self.build_btn.resize_width_ratio(1/6)
         self.build_btn.resize_height_ratio(1/10)
         self.build_btn.center_x_ratio(3/4)
