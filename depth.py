@@ -13,7 +13,7 @@ from SongBuilder import SongBuilder
 from Song import Song
 
 FULLSCREEN = 0
-SCREENRECT = pg.Rect(0, 0, 640, 480)
+SCREENRECT = pg.Rect(0, 0, 1280, 720)
 '''
 Represention of the Game itself.
 Game should store all the related game context data as it should be the first parameter (besides self) in many of the other objects used 
@@ -44,12 +44,13 @@ class Game:
 
         # Initialize Containers/Components/UI
         self.main_menu = MainMenu(self)
+        self.current_component = self.main_menu
 
         self.song_player = SongPlayer(self, current_song = "Niji no Kanata ni.ogg")
         
         self.song_builder = SongBuilder(self)
 
-        self.current_component = self.main_menu
+        
     
     def change_to_main_menu(self):
         self.current_component = self.main_menu
@@ -73,7 +74,7 @@ class Game:
                     self.close()
             # Get the relative movement (velocity vector) of the mouse position per frame
             self.mouse_rel = pg.mouse.get_rel()            
-
+            
             # Main Root update 
             self.current_component.update(self)
             self.current_component.render(self)

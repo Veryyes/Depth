@@ -1,11 +1,17 @@
 import uuid
+import math
 
 import pygame as pg
 
 from Actions import Actions
 
 class Component:
-    
+    TOP = 0
+    CENTER = 1
+    BOTTOM = 2
+    LEFT = 3
+    RIGHT = 4
+
     '''
     Creates a new component
     :param x: the x coordinate relative to the parent
@@ -28,7 +34,8 @@ class Component:
 
         self.text = ""
         self.text_font = self.parent.text_font if self.parent else ""
-        self.font_name = ""
+        self.text_align = (Component.CENTER, Component.CENTER)
+        self.font_name = self.parent.font_name if self.parent else ""
         self.font_size = self.parent.font_size if self.parent else 48
         self.text_color = (0,0,0)
 
@@ -44,6 +51,9 @@ class Component:
 
         # Mapping (funcA -> funcB) where if funcA is true, then call funcB
         self.registered_events = {}
+
+    def get_diagonal(self):
+        return math.sqrt(self.rect.w**2 + self.rect.h**2)
 
     '''
     Resize with width of the component relative to the parents or a components width
@@ -74,6 +84,8 @@ class Component:
     Resize width of component based on largest child
     '''
     def resize_width_on_children(self):
+        if len(self.children) == 0:
+            return
         max_w = max([child.rect.w for child in self.children])
         self.rect.w = max_w
 
@@ -81,6 +93,8 @@ class Component:
     Resize height of component based on largest child
     '''
     def resize_height_on_children(self):
+        if len(self.children) == 0:
+            return
         max_h = max([child.rect.h for child in self.children])
         self.rect.h = max_h
 
@@ -90,19 +104,43 @@ class Component:
     '''
     def center_x_ratio(self, ratio, component=None):
         if not component:
-            self.rect.x = self.parent.rect.x + (self.parent.rect.w*ratio) - (self.rect.w / 2)
-        else:
-            self.rect.x = component.rect.x + (component.rect.w*ratio) - (self.rect.w / 2)
-                
+            component = self.parent
+        
+        self.rect.x = component.rect.x + (component.rect.w*ratio) - (self.rect.w / 2)
+
+    def left_align_ratio(self, ratio, component=None):
+        if not component:
+            component = self.parent
+
+        self.rect.x = component.rect.x + component.rect.w*ratio
+
+    def right_align_ratio(self, ratio, component=None):
+        if not component:
+            component = self.parent
+
+        self.rect.x = component.rect.x + component.rect.w*ratio - self.rect.w
+
     '''
     Centers this component to ratio * parent's height relative to the parents y position
     :param ratio: the percentage of the parent's height the component should be centered to
     '''
     def center_y_ratio(self, ratio, component=None):
         if not component:
-            self.rect.y = self.parent.rect.y + (self.parent.rect.h*ratio) - (self.rect.h / 2)
-        else:
-            self.rect.y = component.rect.y + (component.rect.h*ratio) - (self.rect.h / 2)
+            component = self.parent
+        
+        self.rect.y = component.rect.y + (component.rect.h*ratio) - (self.rect.h / 2)
+
+    def top_align_ratio(self, ratio, component=None):
+        if not component:
+            component = self.parent
+
+        self.rect.y = component.rect.y + component.rect.h*ratio
+
+    def bottom_align_ratio(self, ratio, component=None):
+        if not component:
+            component = self.parent
+
+        self.rect.y = component.rect.y + component.rect.h*ratio - self.rect.h
 
     '''
     Flushes component to the left side of the parent, or to the other component specified
@@ -190,15 +228,62 @@ class Component:
         
         # If theres text, render it
         if len(self.text) > 0:
-            text_pos = (self.get_width_ratio(.5) - (self.text_w/2), self.get_height_ratio(.5) - (self.text_h/2))
+            if self.text_align[0] == Component.LEFT:
+                text_x = self.rect.x
+            elif self.text_align[0] == Component.CENTER:
+                text_x = self.get_width_ratio(.5) - (self.text_w/2)
+            elif self.text_align[0] == Component.RIGHT:
+                text_x = self.get_width_ratio(1) - self.text_w
+            else:
+                text_x = self.get_width_ratio(.5) - (self.text_w/2)
+
+            if self.text_align[1] == Component.TOP:
+                text_y = self.rect.y
+            elif self.text_align[1] == Component.CENTER:
+                text_y = self.get_height_ratio(.5) - (self.text_h/2)
+            elif self.text_align[1] == Component.BOTTOM:
+                text_y = self.get_height_ratio(1) - self.text_h
+            else:
+                text_y = self.get_height_ratio(.5) - (self.text_h/2)
+
+            text_pos = (text_x, text_y)
+            
             game_ctxt.screen.blit(self.text_img, text_pos)
 
         # If you wanna draw the outline, draw it
         if self.draw_outline:
-            pg.draw.rect(game_ctxt.screen, self.outline_color, self.rect, self.outline_thiccness)
+            outline_rect = pg.Rect(self.rect.x-1, self.rect.y-1, self.rect.w+2, self.rect.h+2)
+            pg.draw.rect(game_ctxt.screen, self.outline_color, outline_rect, self.outline_thiccness)
 
         for child in self.children:
-            child.render(game_ctxt)
+            child.render(game_ctxt)        
+
+    def strech_image(self, dims=None):
+        image_copy = self.image.copy()
+        if dims:
+            target_w, target_h = dims
+        else:
+            target_w, target_h = self.rect.size
+    
+        self.image = pg.transform.scale(image_copy, (target_w, target_h))
+
+    def fit_image(self, dims=None):
+        image_copy = self.image.copy()
+        img_w, img_h = image_copy.get_size()
+
+        img_rect = pg.Rect(0,0, img_w, img_h)
+
+        if dims:
+            target_w, target_h = dims
+        else:
+            target_w, target_h = self.rect.size
+
+        target_rect = pg.Rect(0,0,target_w, target_h)
+
+        self.image = pg.transform.scale(image_copy, (img_rect.fit(target_rect).size))
+        
+    def tile_image(self):
+        pass
 
     '''
     Sets the background color of the component to a solid color
@@ -337,6 +422,16 @@ class Component:
     def get_bottom_edge(self):
         return self.rect.y + self.rect.h
 
+    def highlight_on_hover(self, factor=1.25):
+        self.register_event(
+            Actions.on_mouse_enter,
+            lambda c, gctxt: c.set_background_color(tuple(map(lambda color: min(int(color*factor), 255) , c.parent.background_color)))
+        )
+        self.register_event(
+            Actions.on_mouse_exit,
+            lambda c, gctxt: c.set_background_color(c.parent.background_color)
+        )
+
     '''
     Adds a child component
     :param child_component: The child component to add
@@ -394,6 +489,13 @@ class Component:
     '''
     def is_clicked(self, game_ctxt):
         return self.is_left_clicked(game_ctxt) or self.is_right_clicked(game_ctxt)
+
+    def clicked_outside(self, game_ctxt):
+        if not self.rect.collidepoint(pg.mouse.get_pos()):
+            for event in game_ctxt.events:
+                if event.type == pg.MOUSEBUTTONDOWN and (event.button == 3 or event.button == 1):
+                    return True
+        return False
 
     '''
     Evalutes whether or not the mouse button has been released inside the component
@@ -473,6 +575,21 @@ class Component:
             click =  pg.mouse.get_pressed()[0] == 1
             inside = self.rect.collidepoint(pg.mouse.get_pos())
             return click and inside
+        return False
+
+    def is_scrolling_up(self, game_ctxt):
+        if self.rect.collidepoint(pg.mouse.get_pos()):
+            for event in game_ctxt.events:
+                if event.type == pg.MOUSEBUTTONDOWN and event.button == 4:
+                    return True
+        return False
+
+
+    def is_scrolling_down(self, game_ctxt):
+        if self.rect.collidepoint(pg.mouse.get_pos()):
+            for event in game_ctxt.events:
+                if event.type == pg.MOUSEBUTTONDOWN and event.button == 5:
+                    return True
         return False
 
     '''

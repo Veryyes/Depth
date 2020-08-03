@@ -8,6 +8,7 @@ class MainMenu(Component):
     def __init__(self, gctxt):
         Component.__init__(self, gctxt.screen_rect.x, gctxt.screen_rect.y, gctxt.screen_rect.w, gctxt.screen_rect.h)
         self.image = ResourceManager.get_image("mm_back.png")
+        self.strech_image()
         self.set_font('broadway')
         self.set_text("Depth")
 

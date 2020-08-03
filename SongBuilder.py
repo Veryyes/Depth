@@ -1,14 +1,20 @@
 import pygame as pg
 
 from Component import Component
-from DropdownMenu import DropDownMenu
 from Actions import Actions
+
+from DropdownMenu import DropDownMenu
+from FilePicker import FilePicker
 
 class SongBuilder(Component):
     def __init__(self, gctxt):
         Component.__init__(self, gctxt.screen_rect.x, gctxt.screen_rect.y, gctxt.screen_rect.w, gctxt.screen_rect.h)
         self.song = None
+        self.gctxt = gctxt
 
+        self.init_gui(gctxt)
+
+    def init_gui(self, gctxt):        
         self.set_background_color((32,32,32))
 
         # Exit to main menu
@@ -47,6 +53,7 @@ class SongBuilder(Component):
         new_btn = Component(parent=file_menu)
         new_btn.set_text("New", allow_resize=True)
         new_btn.background=True
+        # new_btn.register_event(Actions.on_left_click)
         file_menu.add_button(new_btn)
         
         open_btn = Component(parent=file_menu)
@@ -120,6 +127,7 @@ class SongBuilder(Component):
         self.tool_bar.apply_to_children(False, 
             lambda child, kwargs: child.register_event(Actions.on_mouse_exit, lambda c, gctxt: c.set_background_color(c.parent.background_color)))
 
+        fpick = FilePicker(gctxt, self)
 
     def exit_to_main_menu(self, gctxt):
         # TODO any clean up on component

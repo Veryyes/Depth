@@ -26,7 +26,7 @@ def get_image(file_path):
     else:
         full_path = os.path.join(ResourceManager.root_path, file_path)
         if os.path.exists(full_path) and os.path.isfile(full_path):
-            surface = pygame.image.load(full_path).convert()
+            surface = pygame.image.load(full_path).convert_alpha()
             ResourceManager.images[file_path] = surface
             return surface
         else:
