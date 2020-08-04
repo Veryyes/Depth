@@ -40,4 +40,4 @@ class MainMenu(Component):
         self.build_btn.set_font("calibri")
         self.build_btn.set_text("Build")
         self.build_btn.register_event(Actions.on_left_click, 
-                                    lambda c, gctxt: gctxt.change_to_song_builder())
+                                    lambda c, gctxt: gctxt.launch_song_builder())

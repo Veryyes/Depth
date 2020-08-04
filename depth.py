@@ -9,7 +9,6 @@ from Component import Component
 from Actions import Actions
 from MainMenu import MainMenu
 from SongPlayer import SongPlayer
-from SongBuilder import SongBuilder
 from Song import Song
 
 FULLSCREEN = 0
@@ -47,10 +46,6 @@ class Game:
         self.current_component = self.main_menu
 
         self.song_player = SongPlayer(self, current_song = "Niji no Kanata ni.ogg")
-        
-        self.song_builder = SongBuilder(self)
-
-        
     
     def change_to_main_menu(self):
         self.current_component = self.main_menu
@@ -58,8 +53,11 @@ class Game:
     def change_to_song_player(self):
         self.current_component = self.song_player
 
-    def change_to_song_builder(self):
-        self.current_component = self.song_builder
+    '''
+    Launches the song builder in its own process
+    '''
+    def launch_song_builder(self):
+        pass
 
     '''
     Main Game Loop
