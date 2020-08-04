@@ -1,6 +1,11 @@
 import os
 
 class Song:
+    # TODO
+    @staticmethod
+    def parseGenreID(id):
+        return ""
+
     def __init__(self, filename):
         self.filename = filename
 
@@ -17,3 +22,4 @@ class Song:
 
     def find_lyrics(String):
         pass
+

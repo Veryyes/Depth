@@ -106,7 +106,8 @@ class SongBuilder(QMainWindow):
         edit_menu.addAction(redo_act)
         
         help_menu = menubar.addMenu("&Help")
-        #credits
+        credit_act = QAction("Credits", self)
+        credit_act.triggered.connect(lambda: print("Made by Yours Truly, Veryyes"))
 
     def new_project(self):
         self.current_project = Project()
@@ -125,6 +126,7 @@ class SongBuilder(QMainWindow):
             del self.HIST['recent_files'][idx]
             self.recent_expand.removeAction(self.recent_expand.actions()[idx])
         except ValueError:
+            # I wish python had a nicer way to get the index of something without throwing an exception...
             pass
             
         # Register File to recently opened
@@ -151,9 +153,14 @@ class SongBuilder(QMainWindow):
             self.current_project = None
         # TODO disable components
 
+    def enable_components(self):
+        pass
+
+    def disable_components(self):
+        pass
+
     def undo(self):
-        print(self.HIST['recent_files'])
-        print([x.text() for x in self.recent_expand.actions()])
+        pass
 
     def redo(self):
         pass
@@ -171,5 +178,6 @@ if  __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
+        # Always save our configs pls
         sb.save_persistant_data()
         sys.exit(exit_num)
