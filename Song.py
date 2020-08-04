@@ -1,4 +1,5 @@
 import os
+import struct
 
 class Song:
     # TODO

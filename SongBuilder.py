@@ -5,8 +5,6 @@ import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 
-from Project import Project
-
 class SongBuilder(QMainWindow):
     INSTALL_FOLDER = os.getcwd()
     CFG_PATH = os.path.join(INSTALL_FOLDER, "configs.json")
@@ -23,6 +21,7 @@ class SongBuilder(QMainWindow):
         self.statusBar().showMessage('Ready')
         self.init_menu_bar()
 
+        self.filename = None
         self.current_project = None
 
         grid = QGridLayout()
@@ -88,10 +87,22 @@ class SongBuilder(QMainWindow):
         close_act.setStatusTip("Close Project")
         close_act.triggered.connect(self.close_project)
 
+        save_act = QAction("Save", self)
+        save_act.setShortcut('Ctrl+S')
+        save_act.setStatusTip("Save Project")
+        save_act.triggered.connect(self.save_project)
+
+        save_as_act = QAction("Save as", self)
+        save_as_act.setShortcut("Ctrl+Shift+S")
+        save_as_act.setStatusTip("Save Project As")
+        save_as_act.triggered.connect(self.save_as_project)
+
         file_menu.addAction(new_act)
         file_menu.addAction(open_act)
         file_menu.addMenu(self.recent_expand)
         file_menu.addAction(close_act)
+        file_menu.addAction(save_act)
+        file_menu.addAction(save_as_act)
 
         edit_menu = menubar.addMenu("&Edit")
         undo_act = QAction("&Undo", self)
@@ -110,7 +121,7 @@ class SongBuilder(QMainWindow):
         credit_act.triggered.connect(lambda: print("Made by Yours Truly, Veryyes"))
 
     def new_project(self):
-        self.current_project = Project()
+        self.current_project = {}
 
     def open_project(self):
         options = QFileDialog.Options()
@@ -142,16 +153,32 @@ class SongBuilder(QMainWindow):
             self.HIST['recent_files'].pop()
             self.recent_expand.removeAction(self.recent_expand.actions()[-1])
         
-
-        self.current_project = Project.load(filename)
+        try:
+            self.current_project = json.load(filename)
+        except Exception as e:
+            err_msg = QMessageBox()
+            err_msg.setWindowTitle("Unable to Load Project")
+            err_msg.setText("Invalid File Format")
+            err_msg.exec_()
+            return
 
         #TODO enable components
 
     def close_project(self):
-        if self.current_project is not None:
-            self.current_project.save()
-            self.current_project = None
+        # TODO if has modified since last save, prompt user for save
+        self.current_project = None
         # TODO disable components
+
+    def save_project(self):
+        if self.current_project is not None:
+            if self.filename is not None:
+                with open(self.filename, 'w') as f:
+                    json.dump(self.current_project, f)
+            else:
+                self.save_as_project()
+
+    def save_as_project(self):
+        pass
 
     def enable_components(self):
         pass
