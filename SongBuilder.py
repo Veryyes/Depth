@@ -5,6 +5,11 @@ import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 
+import numpy as np
+import pyqtgraph as pg
+
+from Timeline import Timeline
+
 class SongBuilder(QMainWindow):
     INSTALL_FOLDER = os.getcwd()
     CFG_PATH = os.path.join(INSTALL_FOLDER, "configs.json")
@@ -20,21 +25,10 @@ class SongBuilder(QMainWindow):
         self.load_persistant_data()
         self.statusBar().showMessage('Ready')
         self.init_menu_bar()
-
+        self.init_gui()
         self.filename = None
         self.current_project = None
 
-        grid = QGridLayout()
-        
-        # grid.addWidget(QLabel("dicks"), 0, 0)
-        # grid.addWidget(QLabel("dicks"), 1, 0)
-        # grid.addWidget(QLabel("dicks"), 1, 1)
-        # grid.addWidget(QLabel("dicks"), 2, 1)
-
-
-        main_widget = QWidget()
-        main_widget.setLayout(grid)
-        self.setCentralWidget(main_widget)
 
     def load_persistant_data(self):
         if not os.path.exists(self.CFG_PATH):
@@ -97,12 +91,18 @@ class SongBuilder(QMainWindow):
         save_as_act.setStatusTip("Save Project As")
         save_as_act.triggered.connect(self.save_as_project)
 
+        export_act = QAction("Export", self)
+        export_act.setShortcut("Ctrl+E")
+        export_act.setStatusTip("Export to a Song File")
+        export_act.triggered.connect(self.export)
+
         file_menu.addAction(new_act)
         file_menu.addAction(open_act)
         file_menu.addMenu(self.recent_expand)
         file_menu.addAction(close_act)
         file_menu.addAction(save_act)
         file_menu.addAction(save_as_act)
+        file_menu.addAction(export_act)
 
         edit_menu = menubar.addMenu("&Edit")
         undo_act = QAction("&Undo", self)
@@ -119,6 +119,42 @@ class SongBuilder(QMainWindow):
         help_menu = menubar.addMenu("&Help")
         credit_act = QAction("Credits", self)
         credit_act.triggered.connect(lambda: print("Made by Yours Truly, Veryyes"))
+
+    def init_gui(self):
+        grid = QGridLayout()
+        
+        # grid.addWidget(QLabel("dicks"), 0, 0)
+        # grid.addWidget(QLabel("dicks"), 1, 0)
+        # grid.addWidget(QLabel("dicks"), 1, 1)
+        # grid.addWidget(QLabel("dicks"), 2, 1)
+        x = np.linspace(-50, 50, 1000)
+        y = np.sin(x)/x
+
+        graph_widget = pg.GraphicsLayoutWidget( title="Example Graph")
+        plot = graph_widget.addPlot(x=x, y=y, name="test plot", title='test title')
+
+        # Row 0 - things
+        grid.addWidget(QLabel(10*"dicks\n"), 0, 0)
+        grid.addWidget(QLabel("dicks"), 0, 1)
+        grid.addWidget(QLabel("dicks"), 0, 2)
+        grid.addWidget(QLabel("dicks"), 0, 3)
+
+        # Row 1 - db/time graph
+        grid.addWidget(graph_widget, 1, 0, 1, 4)
+
+        # Row 2 - timeline
+        timeline = Timeline()
+        grid.addWidget(timeline, 2, 0, 1, 4)
+
+        # Relative Row Heights
+        grid.setRowStretch(0, 3)
+        grid.setRowStretch(1, 1)
+        grid.setRowStretch(2, 1)
+
+
+        main_widget = QWidget()
+        main_widget.setLayout(grid)
+        self.setCentralWidget(main_widget)
 
     def new_project(self):
         self.current_project = {}
@@ -184,6 +220,9 @@ class SongBuilder(QMainWindow):
         pass
 
     def disable_components(self):
+        pass
+
+    def export(self):
         pass
 
     def undo(self):
