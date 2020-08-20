@@ -393,6 +393,13 @@ class Component:
             self.text_color = color
 
         self.text_img = self.text_font.render(self.text, True, self.text_color)
+        
+        # if Alpha Channel Specified
+        if len(self.text_color) == 4:
+            alpha_surf = pg.Surface(self.text_img.get_size(), pg.SRCALPHA)
+            alpha_surf.fill((255, 255, 255, self.text_color[3]))
+            self.text_img.blit(alpha_surf, (0,0), special_flags=pg.BLEND_RGBA_MULT)
+
         self.text_w, self.text_h = self.text_font.size(self.text)
         if allow_resize:
             if self.text_w > self.rect.w:

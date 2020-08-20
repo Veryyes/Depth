@@ -3,12 +3,15 @@ import os
 import json
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import Qt
+
+import math
+from pydub import AudioSegment
+from pydub.playback import play
 
 import numpy as np
 import pyqtgraph as pg
-
-from Timeline import Timeline
 
 class SongBuilder(QMainWindow):
     INSTALL_FOLDER = os.getcwd()
@@ -27,7 +30,7 @@ class SongBuilder(QMainWindow):
         self.init_menu_bar()
         self.init_gui()
         self.filename = None
-        self.current_project = None
+        self.project = None
 
 
     def load_persistant_data(self):
@@ -157,7 +160,7 @@ class SongBuilder(QMainWindow):
         self.setCentralWidget(main_widget)
 
     def new_project(self):
-        self.current_project = {}
+        self.project = {}
 
     def open_project(self):
         options = QFileDialog.Options()
@@ -189,8 +192,9 @@ class SongBuilder(QMainWindow):
             self.HIST['recent_files'].pop()
             self.recent_expand.removeAction(self.recent_expand.actions()[-1])
         
+        # Now we actually try to load the project in
         try:
-            self.current_project = json.load(filename)
+            self.project = json.load(filename)
         except Exception as e:
             err_msg = QMessageBox()
             err_msg.setWindowTitle("Unable to Load Project")
@@ -202,14 +206,14 @@ class SongBuilder(QMainWindow):
 
     def close_project(self):
         # TODO if has modified since last save, prompt user for save
-        self.current_project = None
+        self.project = None
         # TODO disable components
 
     def save_project(self):
-        if self.current_project is not None:
+        if self.project is not None:
             if self.filename is not None:
                 with open(self.filename, 'w') as f:
-                    json.dump(self.current_project, f)
+                    json.dump(self.project, f)
             else:
                 self.save_as_project()
 
@@ -231,7 +235,37 @@ class SongBuilder(QMainWindow):
     def redo(self):
         pass
         
-        
+
+class Timeline(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(300,300,300,192)
+        self.show()
+
+class AudioView(QWidget):
+    def __init__(self, audio_data):
+        super().__init__()
+        self.audio_data = audio_data
+        self.initUI()
+
+    def initUI(self):
+        self.show()
+
+    def paintEvent(self, event):
+        pass
+
+    def paintEvent(self, event):
+        qp = QPainter()
+        qp.begin(self)
+        qp.setPen(Qt.red)
+        size = self.geometry()
+        for x in range(0, size.width()):
+            qp.drawLine(x, 50*math.sin(.25*x)+50, x+1, 50*math.sin(.25*x+1)+50)
+        qp.drawPoint(0,0)
+        qp.end()        
 
 if  __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -247,3 +281,9 @@ if  __name__ == "__main__":
         # Always save our configs pls
         sb.save_persistant_data()
         sys.exit(exit_num)
+
+# f = '.\\library\\Niji no Kanata ni.mp3'
+# import os
+# print(os.path.exists(f))
+# song = AudioSegment.from_mp3(f)
+# play(song)

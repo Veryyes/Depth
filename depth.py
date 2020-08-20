@@ -45,7 +45,7 @@ class Game:
         self.main_menu = MainMenu(self)
         self.current_component = self.main_menu
 
-        self.song_player = SongPlayer(self, current_song = "Niji no Kanata ni.ogg")
+        self.song_player = SongPlayer(self, current_song = "Niji no Kanata ni.mp3")
     
     def change_to_main_menu(self):
         self.current_component = self.main_menu
