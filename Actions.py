@@ -7,12 +7,24 @@ class Actions:
         return component.is_clicked(game_ctxt)
 
     @staticmethod
+    def on_click_outside(component, game_ctxt):
+        return component.clicked_outside(game_ctxt)
+
+    @staticmethod
     def on_right_click(component, game_ctxt):
         return component.is_right_clicked(game_ctxt)
 
     @staticmethod
     def on_left_click(component, game_ctxt):
         return component.is_left_clicked(game_ctxt)
+
+    @staticmethod
+    def on_scroll_up(component, game_ctxt):
+        return component.is_scrolling_up(game_ctxt)
+
+    @staticmethod
+    def on_scroll_down(component, game_ctxt):
+        return component.is_scrolling_down(game_ctxt)
 
     @staticmethod
     def on_mouse_move(component, game_ctxt):
@@ -25,6 +37,14 @@ class Actions:
     @staticmethod
     def on_mouse_enter(component, game_ctxt):
         return component.mouse_entered(game_ctxt)
+
+    @staticmethod
+    def on_mouse_exit_family(component, game_ctxt):
+        return component.mouse_exited_family(game_ctxt)
+
+    @staticmethod
+    def on_mouse_enter_family(component, game_ctxt):
+        return component.mouse_entered_family(game_ctxt)
 
 '''
 what the <strong>fuk</strong> is going on here?
