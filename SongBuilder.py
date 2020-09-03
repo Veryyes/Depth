@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt
 import librosa
 import soundfile as sf
 import numpy as np
+import IPython
 
 class SongBuilder(QMainWindow):
     INSTALL_FOLDER = os.getcwd()
@@ -28,13 +29,12 @@ class SongBuilder(QMainWindow):
         self.filename = None
         self.project = None
         wav, sr  = librosa.load('.\\library\\Niji no Kanata ni.wav', sr=None)
-        # self.waveform_view = AudioView(wav, parent=self)
-        # self.spectogram_view = AudioView(np.zeros([1,2], dtype=float))
         self.wav_data = wav
         self.sample_rate = sr
+        self.specto_data = None #TODO
 
-        self.start = 0
-        self.length = 60
+        self.timeline_start = 0
+        self.timeline_length = 60
 
         self.init_menu_bar()
         self.init_gui()
@@ -269,18 +269,22 @@ class Timeline(QWidget):
         self.setGeometry(300,300,300,192)
         self.show()
 
-class AudioView(QWidget):
-    def __init__(self, audio_data, sample_rate, parent=None):
-        # super(AudioView).__init__(parent)
+class MetadataView(QWidget):
+    def __init__(self, project, parent=None):
         QWidget.__init__(self, parent)
+        self.project = project
+
+class AudioView(QWidget):
+    def __init__(self, audio_data, sample_rate, parent=None):       
+        QWidget.__init__(self, parent)
+        self.parent = parent
         self.audio_data = audio_data
         self.sample_rate = sample_rate
-        self.song_duration = self.audio_data.shape[0]/self.sample_rate 
+        self.song_duration = self.audio_data.shape[0]/self.sample_rate  #TODO use librosa
         self.max_amplitude = max(self.audio_data) * 1.1
-        self.start = 0
-        self.length = 60
+
         # Interval between graphed samples (Because graphing all of them takes a long time)
-        self.interval = 1 # miliseconds
+        self.interval = .001 
         self.initUI()
 
     def initUI(self):
@@ -290,33 +294,29 @@ class AudioView(QWidget):
         p.setColor(self.backgroundRole(), QColor(46, 70, 125))
         self.setPalette(p)
 
+    def get_timeline_start(self):
+        return self.parent.timeline_start
+
+    def get_timeline_length(self):
+        return self.parent.timeline_length
 
     def plot_wav(self):
         plot_width = self.geometry().width()
         plot_height = self.geometry().height()
-
         center = int(plot_height / 2.0)
+        
+        time_range = np.arange(self.get_timeline_start(), self.get_timeline_start() + self.get_timeline_length(), self.interval)
+        samples = librosa.time_to_samples(time_range, sr=self.sample_rate)
 
-        # Convert Time to Samples
-        start_sample = self.start * self.sample_rate
-        num_samples = self.length * self.sample_rate
-        end_sample = start_sample + num_samples
-        if end_sample > self.audio_data.shape[0]:
-            end_sample = self.audio_data.shape[0]
-            num_samples = end_sample - start_sample
-        num_samples_skip = int((self.interval/1000.0) * self.sample_rate)
+        self.max_amplitude = 2*max(self.audio_data[samples[0] : samples[-1]])
 
-        processed_num_samples = int(num_samples/num_samples_skip)
-        # print("Processing Song - {} Samples".format(processed_num_samples))        
-        self.max_amplitude = 2*max(self.audio_data[start_sample:end_sample])
-        index = 0.0
-        for i in range(start_sample, end_sample, num_samples_skip):
-            x = (index/processed_num_samples) * plot_width
-            y = ((self.audio_data[i]/self.max_amplitude) * plot_height) + center
+        index = 0
+        for sample in samples:
+            x = (float(index)/samples.size) * plot_width
+            y = (self.audio_data[sample]/self.max_amplitude) * plot_height + center
             index += 1
 
             yield x, y
-
 
     def paintEvent(self, event):
         qp = QPainter()
