@@ -9,6 +9,9 @@ from PyQt5.QtCore import Qt
 import librosa
 import soundfile as sf
 import numpy as np
+
+from Project import Project
+
 import IPython
 
 class SongBuilder(QMainWindow):
@@ -26,8 +29,7 @@ class SongBuilder(QMainWindow):
         self.load_persistant_data()
         self.statusBar().showMessage('Ready')
 
-        self.filename = None
-        self.project = None
+        self.project = Project()
         wav, sr  = librosa.load('.\\library\\Niji no Kanata ni.wav', sr=None)
         self.wav_data = wav
         self.sample_rate = sr
@@ -141,10 +143,11 @@ class SongBuilder(QMainWindow):
         grid = QGridLayout()
         
         # Row 0 - things
-        grid.addWidget(QLabel(10*"dicks\n"), 0, 0)
-        grid.addWidget(QLabel("dicks"), 0, 1)
-        grid.addWidget(QLabel("dicks"), 0, 2)
-        grid.addWidget(QLabel("dicks"), 0, 3)
+        m = MetadataView(self.project, self)
+        grid.addWidget(m, 0, 0)
+
+        l = LyricsView(self.project, self)
+        grid.addWidget(l, 0, 1)
 
         # Row 1 - db/time graph
         av = AudioView(self.wav_data, self.sample_rate, parent=self)
@@ -155,9 +158,9 @@ class SongBuilder(QMainWindow):
         grid.addWidget(timeline, 2, 0, 1, 4)
 
         # Relative Row Heights
-        grid.setRowStretch(0, 3)
+        grid.setRowStretch(0, 2)
         grid.setRowStretch(1, 1)
-        grid.setRowStretch(2, 1)
+        grid.setRowStretch(2, 2)
 
 
         main_widget = QWidget()
@@ -168,22 +171,21 @@ class SongBuilder(QMainWindow):
         if not os.path.exists(filepath):
             QMessageBox.warning(self, "File does not exist", "{} Does not exists".format(filepath))
             return
-        self.project['filepath'] = filepath
+        self.project.audio_path = filepath
         wav, sr  = librosa.load(filepath, sr=None)
         self.sound_data = wav
         self.sample_rate = sr
-        self.project['song_length'] = 1000 * (sr/wav.shape[0])
+        self.project.song_length = 1000 * (sr/wav.shape[0])
+        self.project.sample_rate = self.sample_rate
 
     def new_project(self):
-
         # Open file dialog to pick a song
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         filepath, _ = QFileDialog.getOpenFileName(self, "Import a Song", "","All Files (*)", options=options)
         if filepath:
-            self.project = {}
-            self.load_audiofile
-            # self.load_project(filename)
+            self.project = Project()
+            self.load_audiofile(filepath)
 
 
     def open_project(self):
@@ -218,7 +220,7 @@ class SongBuilder(QMainWindow):
         
         # Now we actually try to load the project in
         try:
-            self.project = json.load(filename)
+            self.project = Project.from_json(filename)
         except Exception as e:
             err_msg = QMessageBox()
             err_msg.setWindowTitle("Unable to Load Project")
@@ -235,9 +237,8 @@ class SongBuilder(QMainWindow):
 
     def save_project(self):
         if self.project is not None:
-            if self.filename is not None:
-                with open(self.filename, 'w') as f:
-                    json.dump(self.project, f)
+            if self.project.filepath is not None:
+                self.project.to_json()
             else:
                 self.save_as_project()
 
@@ -269,10 +270,44 @@ class Timeline(QWidget):
         self.setGeometry(300,300,300,192)
         self.show()
 
+class LyricsView(QWidget):
+    def __init__(self, project, parent=None):
+        QWidget.__init__(self, parent)
+        self.project = project
+        self.initUI()
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        self.lyrics_box = QTextEdit(self)
+        self.lyrics_box.textChanged.connect(self.text_update)
+        layout.addWidget(self.lyrics_box)
+        self.setLayout(layout)
+
+    def text_update(self):
+        print(self.lyrics_box.toPlainText())
+
 class MetadataView(QWidget):
     def __init__(self, project, parent=None):
         QWidget.__init__(self, parent)
         self.project = project
+        self.initUI()
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        audio_lbl = QLabel(self)
+        audio_lbl.setText("Audio: {}".format(os.path.basename(str(self.project.audio_path))))
+
+        song_duration_lbl = QLabel(self)
+        song_duration_lbl.setText("Duration {}:{}".format(int(self.project.song_length/60), self.project.song_length%60))
+
+        sample_rate_lbl = QLabel(self)
+        sample_rate_lbl.setText("Sample Rate: {} Hz".format(self.project.sample_rate))
+
+        layout.addWidget(audio_lbl)
+        layout.addWidget(song_duration_lbl)
+        layout.addWidget(sample_rate_lbl)
+
+        self.setLayout(layout)
 
 class AudioView(QWidget):
     def __init__(self, audio_data, sample_rate, parent=None):       
@@ -280,7 +315,7 @@ class AudioView(QWidget):
         self.parent = parent
         self.audio_data = audio_data
         self.sample_rate = sample_rate
-        self.song_duration = self.audio_data.shape[0]/self.sample_rate  #TODO use librosa
+        self.song_duration = self.audio_data.shape[0]/self.sample_rate
         self.max_amplitude = max(self.audio_data) * 1.1
 
         # Interval between graphed samples (Because graphing all of them takes a long time)
@@ -304,7 +339,7 @@ class AudioView(QWidget):
         plot_width = self.geometry().width()
         plot_height = self.geometry().height()
         center = int(plot_height / 2.0)
-        
+
         time_range = np.arange(self.get_timeline_start(), self.get_timeline_start() + self.get_timeline_length(), self.interval)
         samples = librosa.time_to_samples(time_range, sr=self.sample_rate)
 
@@ -328,9 +363,6 @@ class AudioView(QWidget):
             point1 = self.waveform[i]
             point2 = self.waveform[i+1]
             qp.drawLine(point1[0], point1[1], point2[0], point2[1])
-
-
-        
         qp.end()        
 
 
