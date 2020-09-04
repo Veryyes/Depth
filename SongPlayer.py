@@ -1,5 +1,6 @@
 import queue
 import json
+import os
 
 import pygame as pg
 
@@ -23,7 +24,9 @@ class SongPlayer(Component):
         self.start = 0
         self.song_time = 0
         self.lyric_counter = 0
-        with open("library\\Niji no Kanata ni.lyc", 'r') as f:
+
+        self.current_song = "Niji no Kanata ni.ogg"
+        with open(os.path.join("library", "Niji no Kanata ni.lyc"), 'r') as f:
             self.song = json.load(f)
 
         self.pre_fade_ratio = .75

@@ -22,6 +22,7 @@ pooch==1.1.1
 prompt-toolkit==3.0.7
 ptyprocess==0.6.0
 pycparser==2.20
+pygame==2.0.0.dev8
 Pygments==2.6.1
 pyparsing==2.4.7
 PyQt5==5.15.0
