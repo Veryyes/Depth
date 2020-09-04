@@ -30,7 +30,7 @@ class SongBuilder(QMainWindow):
         self.statusBar().showMessage('Ready')
 
         self.project = Project()
-        wav, sr  = librosa.load('.\\library\\Niji no Kanata ni.wav', sr=None)
+        wav, sr  = librosa.load(os.path.join('.', 'library', 'Niji no Kanata ni.wav'), sr=None)#'.\\library\\Niji no Kanata ni.wav', sr=None)
         self.wav_data = wav
         self.sample_rate = sr
         self.specto_data = None #TODO
