@@ -6,7 +6,7 @@ import SongList from './components/SongList';
 import allStar from './songs/all-star.json';
 
 // TODO: PULL SONG TEMPO TO CHANGE HOW FAST REACT LOGO SPINS
-function App() {
+export default function App() {
   const [currSongJson, setCurrSongJson] = React.useState(allStar);
 
   return (
@@ -22,5 +22,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
