@@ -20,7 +20,7 @@ class SongEntry(Base):
             "id":self.id,
             "title":self.title,
             "artist":self.artist,
-            "genre":self.genre.name,
+            "genre": "" if self.genre is None else self.genre.name,
             "rating":self.rating
         }
 

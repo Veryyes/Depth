@@ -20,7 +20,7 @@ def index():
 
 @app.route('/api/search')
 def search():
-    title = request.args.get("Title")
+    title = request.args.get("title")
     print(title)
     manager = DbManager(DB)
     manager.connect()
@@ -31,4 +31,3 @@ def search():
 if __name__ == "__main__":
     setup()
     app.run(debug=True)
-
