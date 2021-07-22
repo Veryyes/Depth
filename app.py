@@ -1,9 +1,18 @@
 from flask import Flask , request
 from DbManager import DbManager
 import json
-app = Flask(__name__)
-DB = "C:\\Users\\Julian\\Downloads\\Karaoke App\\Depth.DB"
+from pathlib import Path
+import os
 
+app = Flask(__name__)
+
+DB = None
+def setup():
+    docs_dir = os.path.join(str(Path.home()), "Documents")
+    if not os.path.exists(docs_dir):
+        os.makedirs(docs_dir)
+    global DB
+    DB = os.path.join(docs_dir, "Depth.DB")
 
 @app.route('/')
 def index():
@@ -20,5 +29,6 @@ def search():
     return json.dumps(songs)
 
 if __name__ == "__main__":
+    setup()
     app.run(debug=True)
 

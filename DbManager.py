@@ -23,7 +23,7 @@ class DbManager:
         Base.metadata.create_all(self.engine)
 
     def get_all_songs(self):
-        return  self.session.query(SongEntry.title).all()
+        return self.session.query(SongEntry.title).all()
 
     def get_songs_by_name(self, name):
         return self.session.query(SongEntry).filter(SongEntry.title == name).all()
