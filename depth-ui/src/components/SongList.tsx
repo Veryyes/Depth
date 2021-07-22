@@ -5,7 +5,7 @@ import hero from '../songs/holding-out-for-a-hero.json';
 
 // TODO: UNCOMMENT AXIOS CALLS WHEN API CODE IS DONE
 export default function SongList({ loadSongData }: { loadSongData: (lyrics: any) => void }) {
-  const [songList, setSongList] = React.useState(['All Star', 'Holding Out For A Hero']);
+  const [songList, setSongList] = React.useState([]);
 
   async function loadSong(e: React.MouseEvent, title: string) {
     e.preventDefault();
@@ -14,19 +14,19 @@ export default function SongList({ loadSongData }: { loadSongData: (lyrics: any)
     loadSongData(lyrics);
   }
 
-  // React.useEffect(() => {
-  //   const fetchData = async () => {
-  //     const songs = await fetchAllSongs();
-  //     setSongList(songs);
-  //   };
-  //   fetchData();
-  // }, []);
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const songs = await fetchAllSongs();
+      setSongList(songs);
+    };
+    fetchData();
+  }, []);
 
   return (
     <div>
-      {songList.map((songTitle: string) => (
+      {songList.map((songInfo: any) => (
         <>
-          <button onClick={e => loadSong(e, songTitle)}>{songTitle}</button>
+          <button onClick={e => loadSong(e, songInfo.title)}>{songInfo.title}</button>
           <br />
         </>
       ))}
