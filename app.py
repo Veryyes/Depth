@@ -28,6 +28,28 @@ def search():
     songs = [s.to_dict() for s in songs]
     return json.dumps(songs)
 
+# @app.route('/api/search')
+# def search_artist():
+#     artist = request.args.get("Artist")
+#     print(artist)
+#     manager = DbManager(DB)
+#     manager.connect()
+#     songs = manager.get_songs_by_artist(artist)
+#     songs = [s.to_dict() for s in songs]
+#     return json.dumps(songs)
+
+@app.route('/api/songs')
+def songs():
+    manager = DbManager(DB)
+    manager.connect()
+    songs = manager.get_all_songs()
+    songs = [s.to_dict() for s in songs]
+    return json.dumps(songs)
+
+
+
+
+
 if __name__ == "__main__":
     setup()
     app.run(debug=True)
