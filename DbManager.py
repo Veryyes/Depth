@@ -13,7 +13,7 @@ class DbManager:
         self.url = "sqlite:///{}".format(sqlite_db_path)
         self.engine = create_engine(self.url)
         self.session = None
-        
+
 
     def connect(self):
         self.engine.connect()
@@ -27,8 +27,6 @@ class DbManager:
 
     def get_songs_by_name(self, name):
         return self.session.query(SongEntry).filter(SongEntry.title == name).all()
-    
+
     def get_songs_by_artist(self, name):
         return self.session.query(SongEntry).filter(SongEntry.artist == name).all()
-    
-    
