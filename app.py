@@ -52,7 +52,7 @@ def songs():
     songs = [s.to_dict() for s in songs]
     return json.dumps(songs)
 
-@app.route('/mp3_download/<path:mp3>')
+@app.route('/api/songs/mp3/<path:mp3>')
 def download_mp3(mp3):
     mp3path = os.path.join(static_resources,mp3)
     print("mp3 path: "+mp3path)
@@ -62,7 +62,7 @@ def download_mp3(mp3):
     else:
         abort(404)
 
-@app.route('/lyric_download/<path:lyric>')
+@app.route('/api/songs/lyrics/<path:lyric>')
 def download_lyric(lyric):
     lyricpath = os.path.join(static_resources,lyric)
     print("mp3 path: "+lyricpath)

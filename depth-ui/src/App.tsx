@@ -3,11 +3,16 @@ import logo from './karaoke_logo.jpg';
 import './App.css';
 import SongPlayer from './components/SongPlayer';
 import SongList from './components/SongList';
-import allStar from './songs/all-star.json';
 
-// TODO: PULL SONG TEMPO TO CHANGE HOW FAST REACT LOGO SPINS
 export default function App() {
-  const [currSongJson, setCurrSongJson] = React.useState(allStar);
+  const [currSongJson, setCurrSongJson] = React.useState({});
+
+  function renderPlayer() {
+    if (Object.keys(currSongJson).length > 0) {
+      return <SongPlayer songJson={currSongJson} />;
+    }
+    return <h3>Please select a song to sing &lt;3</h3>;
+  }
 
   return (
     <div className="App">
@@ -16,8 +21,7 @@ export default function App() {
           <img src={logo} className="App-logo" alt="logo" />
           <SongList loadSongData={setCurrSongJson} />
         </div>
-
-        <SongPlayer songJson={currSongJson} />
+        {renderPlayer()}
       </header>
     </div>
   );

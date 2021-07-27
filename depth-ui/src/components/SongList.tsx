@@ -1,16 +1,13 @@
 import * as React from 'react';
 import { fetchAllSongs, fetchSongLyrics } from '../api';
-import allStar from '../songs/all-star.json';
-import hero from '../songs/holding-out-for-a-hero.json';
+import { Song } from '../types.d';
 
-// TODO: UNCOMMENT AXIOS CALLS WHEN API CODE IS DONE
 export default function SongList({ loadSongData }: { loadSongData: (lyrics: any) => void }) {
   const [songList, setSongList] = React.useState([]);
 
-  async function loadSong(e: React.MouseEvent, title: string) {
+  async function loadSong(e: React.MouseEvent, songDetails: Song) {
     e.preventDefault();
-    // const lyrics = await fetchSongLyrics(title);
-    const lyrics = title === 'All Star' ? allStar : hero;
+    const lyrics = await fetchSongLyrics(songDetails.lyrics_path);
     loadSongData(lyrics);
   }
 
@@ -24,9 +21,9 @@ export default function SongList({ loadSongData }: { loadSongData: (lyrics: any)
 
   return (
     <div>
-      {songList.map((songInfo: any) => (
+      {songList?.map((songInfo: any) => (
         <>
-          <button onClick={e => loadSong(e, songInfo.title)}>{songInfo.title}</button>
+          <button onClick={e => loadSong(e, songInfo)}>{songInfo.title}</button>
           <br />
         </>
       ))}
