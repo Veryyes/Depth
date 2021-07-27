@@ -1,5 +1,5 @@
 import * as React from 'react';
-import logo from './logo.svg';
+import logo from './karaoke_logo.jpg';
 import './App.css';
 import SongPlayer from './components/SongPlayer';
 import SongList from './components/SongList';
