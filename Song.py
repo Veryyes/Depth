@@ -14,6 +14,7 @@ class SongEntry(Base):
     genre_id=Column(Integer,ForeignKey("genres.id"))
     rating = Column(Float)
     lyrics_path = Column(Text)
+    file_name = Column(Text)
 
     def to_dict(self):
         return {
@@ -21,7 +22,9 @@ class SongEntry(Base):
             "title":self.title,
             "artist":self.artist,
             "genre": "" if self.genre is None else self.genre.name,
-            "rating":self.rating
+            "rating":self.rating,
+            "file_name": self.file_name,
+            "lyrics_path": self.lyrics_path
         }
 
 

@@ -14,7 +14,6 @@ class DbManager:
         self.engine = create_engine(self.url)
         self.session = None
 
-
     def connect(self):
         self.engine.connect()
         Session = sessionmaker(self.engine)

@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// TODO: UPDATE URLs ONCE BACKEND CODE IS DONE
 export async function fetchAllSongs() {
   try {
     const response = await axios.get('/api/songs');
@@ -10,9 +9,18 @@ export async function fetchAllSongs() {
   }
 }
 
-export async function fetchSongLyrics(songTitle: string) {
+export async function downloadMp3(songFilePath: string) {
   try {
-    const response = await axios.get('/api/songs/' + songTitle);
+    const response = await axios.get('/api/songs/mp3/' + songFilePath);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function fetchSongLyrics(lyricsFilePath: string) {
+  try {
+    const response = await axios.get('/api/songs/lyrics/' + lyricsFilePath);
     return response.data;
   } catch (error) {
     console.log(error);
