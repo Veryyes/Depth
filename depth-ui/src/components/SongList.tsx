@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { fetchAllSongs, fetchSongLyrics } from '../api';
 import { Song } from '../types.d';
+import './component.css';
 
 export default function SongList({ loadSongData }: { loadSongData: (lyrics: any) => void }) {
   const [songList, setSongList] = React.useState([]);
@@ -20,10 +21,12 @@ export default function SongList({ loadSongData }: { loadSongData: (lyrics: any)
   }, []);
 
   return (
-    <div>
+    <div className="song-list">
       {songList?.map((songInfo: any) => (
         <>
-          <button onClick={e => loadSong(e, songInfo)}>{songInfo.title}</button>
+          <button className="song-button" onClick={e => loadSong(e, songInfo)}>
+            "{songInfo.title}" - {songInfo.artist}
+          </button>
           <br />
         </>
       ))}

@@ -17,10 +17,11 @@ export default function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <div style={{ display: 'flex', alignItems: 'right' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', margin: '15px' }}>
           <img src={logo} className="App-logo" alt="logo" />
           <SongList loadSongData={setCurrSongJson} />
         </div>
+
         {renderPlayer()}
       </header>
     </div>

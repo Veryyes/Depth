@@ -37,7 +37,6 @@ export default function SongPlayer({ songJson }: { songJson: Record<string, any>
 
   return (
     <div>
-      <h3>{timeElapsed}</h3>
       <audio ref={audioRef} controls onTimeUpdate={updateTime}>
         <source src={songURI} type="audio/mpeg" />
         Your browser does not support the audio element.
