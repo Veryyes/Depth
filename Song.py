@@ -11,9 +11,9 @@ class SongEntry(Base):
     title = Column(Text)
     artist = Column(Text)
     genre = relationship("GenreEntry")
-    genre_id=Column(Integer,ForeignKey("genres.id"))
+    genre_id = Column(Integer,ForeignKey("genres.id"))
     rating = Column(Float)
-    lyrics_path = Column(Text)
+    song_data = Column(Text)
     file_name = Column(Text)
 
     def to_dict(self):
