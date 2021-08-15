@@ -1,23 +1,21 @@
-import json
 from pathlib import Path
 import os
 
-from flask import Flask , request, send_from_directory, abort
+from flask import Flask , send_from_directory, abort
 from DbManager import DbManager
 
+from configuration import *
 from api import api
+from Lobby import Lobby_Manager
 
-static_resources = os.path.join(os.path.dirname(os.path.abspath(__file__)), "depth-ui", "build")
-app = Flask(__name__, static_folder=static_resources)
+app = Flask(__name__, static_folder=STATIC_RESOURCES)
 app.register_blueprint(api)
 
-DB = None
+# DB = None
 def setup():
-    docs_dir = os.path.join(str(Path.home()), "Documents")
     if not os.path.exists(docs_dir):
         os.makedirs(docs_dir)
-    global DB
-    DB = os.path.join(docs_dir, "Depth.DB")
+    Lobby_Manager.start()
 
 @app.route('/', defaults={'path': "index.html"})
 @app.route('/<path:path>')

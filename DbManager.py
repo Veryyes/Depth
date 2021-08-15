@@ -34,6 +34,9 @@ class DbManager:
     def get_all_songs(self):
         return self.session.query(SongEntry).all()
 
+    def get_song_by_id(self, id):
+        return self.session.query(SongEntry).filter(SongEntry.id == id).one()
+
     def get_songs_by_name(self, name):
         return self.session.query(SongEntry).filter(SongEntry.title == name).all()
 
