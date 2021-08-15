@@ -33,7 +33,6 @@ def index(path):
     else:
         abort(404)
 
-
 if __name__ == "__main__":
     setup()
     app.run()

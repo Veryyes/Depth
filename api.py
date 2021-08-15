@@ -7,7 +7,7 @@ from DbManager import DbManager
 api = Blueprint('api', __name__)
 from Lobby import Lobby_Manager
 
-class APIResponse:
+class DepthResponse:
     SUCC = "SUCCESS"
     ERROR = "ERROR"
 
@@ -26,20 +26,35 @@ class APIResponse:
     def to_json(self):
         return json.dumps(self.to_dict())
 
-INVALID_LOBBY_UUID_RES = (APIResponse(APIResponse.ERROR, message="Invalid Lobby UUID").to_json(), 400)
+INVALID_LOBBY_UUID_RES = (DepthResponse(DepthResponse.ERROR, message="Invalid Lobby UUID").to_json(), 400)
 
 # Lobby Support
 @api.route('/api/lobby/create')
 def create_lobby():
     '''
     Generates a new lobby and returns the UUID of the newly created lobby
+    sets the cookie "lobby_token" to the lobby UUID
     '''
     lobby = Lobby_Manager.create_lobby()
     if lobby is None:
-        res = APIResponse(APIResponse.ERROR, message="Failed to create new lobby. Try again in a few seconds.").to_json(), 500
+        res = DepthResponse(DepthResponse.ERROR, message="Failed to create new lobby. Try again in a few seconds.").to_json(), 500
     else:
-        res = APIResponse(APIResponse.SUCC, message="Successfully created a lobby", data=lobby.to_dict()).to_json(), 200
+        res = DepthResponse(DepthResponse.SUCC, message="Successfully created a lobby", data=lobby.to_dict()).to_json(), 200
 
+    resp = make_response(res)
+    resp.set_cookie('lobby_token', lobby.uuid)
+    return resp
+
+@api.route('/api/lobby/<str:lobby_uuid>')
+def join_lobby(lobby_uuid):
+    '''
+    "Joins" the lobby. i.e. sets the lobby_token cookie to the lobby uuid so future API requests are accepted
+    '''
+    lobby = Lobby_Manager.get_lobby(lobby_uuid)
+    if lobby is None:
+        return INVALID_LOBBY_UUID_RES
+
+    res = DepthResponse(DepthResponse.SUCC, data=lobby.to_dict()).to_json(), 200
     resp = make_response(res)
     resp.set_cookie('lobby_token', lobby.uuid)
     return resp
@@ -57,7 +72,7 @@ def song_queue():
         queue = lobby.song_queue.view()
         queue = [_get_song_metadata(song_id).to_dict() for song_id in queue]
         
-        return APIResponse(APIResponse.SUCC, data=queue).to_json(), 200
+        return DepthResponse(DepthResponse.SUCC, data=queue).to_json(), 200
     elif request.method == 'POST':
         form = request.form
         raise NotImplementedError
