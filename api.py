@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request
+from flask import Blueprint, request, make_response
 
 from DbManager import DbManager
 
@@ -40,12 +40,15 @@ def create_lobby():
     else:
         res = APIResponse(APIResponse.SUCC, message="Successfully created a lobby", data=lobby.to_dict()).to_json(), 200
 
-    return res
+    resp = make_response(res)
+    resp.set_cookie('lobby_token', lobby.uuid)
+    return resp
 
 # Song Queuing
 @api.route('/api/queue', methods=['GET', 'POST', 'DELETE'])
 def song_queue():
     lobby_token = request.cookies.get('lobby_token')
+
     if not Lobby_Manager.lobby_exists(lobby_token):
         return INVALID_LOBBY_UUID_RES
 

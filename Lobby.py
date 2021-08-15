@@ -1,5 +1,5 @@
 from datetime import datetime
-from time import time
+import time
 from threading import Thread, Lock
 import uuid
 
@@ -139,7 +139,8 @@ class Lobby:
 
 
 class LobbyManager(Thread):
-    def __init__(self, timeout=15*60, check_interval=5):
+    def __init__(self, timeout=15*60, check_interval=2):
+        super().__init__()
         self.timeout=timeout
         self.check_interval = check_interval
         self.running = True
@@ -181,8 +182,8 @@ class LobbyManager(Thread):
             while lobby_uuid in self.lobbies.keys():
                 lobby_uuid = uuid.uuid4()
             
-            l = Lobby(lobby_uuid)
-            self.lobbies[lobby_uuid] = l
+            l = Lobby(str(lobby_uuid))
+            self.lobbies[str(lobby_uuid)] = l
 
             self.lobbies_lock.release()
             return l
@@ -227,3 +228,4 @@ class LobbyManager(Thread):
             time.sleep(self.check_interval)
 
 Lobby_Manager = LobbyManager()
+
