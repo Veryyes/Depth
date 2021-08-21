@@ -1,7 +1,7 @@
 from configuration import DB
 import json
 
-from flask import Blueprint, request, make_response, stream_with_context
+from flask import Blueprint, request, make_response, stream_with_context, abort
 
 from DbManager import DbManager
 
@@ -30,21 +30,27 @@ class DepthResponse:
 INVALID_LOBBY_UUID_RES = (DepthResponse(DepthResponse.ERROR, message="Invalid Lobby UUID").to_json(), 400)
 
 # Lobby Support
-@api.route('/api/lobby/create')
-def create_lobby():
+@api.route('/api/lobby/', methods=['POST'])
+def handle_lobby():
     '''
     Generates a new lobby and returns the UUID of the newly created lobby
     sets the cookie "lobby_token" to the lobby UUID
     '''
-    lobby = Lobby_Manager.create_lobby()
-    if lobby is None:
-        res = DepthResponse(DepthResponse.ERROR, message="Failed to create new lobby. Try again in a few seconds.").to_json(), 500
-    else:
-        res = DepthResponse(DepthResponse.SUCC, message="Successfully created a lobby", data=lobby.to_dict()).to_json(), 200
+    if request.method == 'GET':
+        # TODO show public lobbies when we implement private/public lobbies
+        abort(404)
+    elif request.method == 'POST':
+        lobby = Lobby_Manager.create_lobby()
+        if lobby is None:
+            res = DepthResponse(DepthResponse.ERROR, message="Failed to create new lobby. Try again in a few seconds.").to_json(), 500
+        else:
+            res = DepthResponse(DepthResponse.SUCC, message="Successfully created a lobby", data=lobby.to_dict()).to_json(), 200
 
-    resp = make_response(res)
-    resp.set_cookie('lobby_token', lobby.uuid)
-    return resp
+        resp = make_response(res)
+        resp.set_cookie('lobby_token', lobby.uuid)
+        return resp
+
+    abort(404)
 
 # TODO Test
 @api.route('/api/lobby/<str:lobby_uuid>')
@@ -66,7 +72,6 @@ def join_lobby(lobby_uuid):
 def song_queue():
     lobby_token = request.cookies.get('lobby_token')
 
-    # if not Lobby_Manager.lobby_exists(lobby_token):
     lobby = Lobby_Manager.get_lobby(lobby_token)
     if lobby is None:
         return INVALID_LOBBY_UUID_RES
