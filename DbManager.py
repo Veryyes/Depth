@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, undefer
+from sqlalchemy.orm import sessionmaker
 from Song import Base
 
 from Song import SongEntry
@@ -35,7 +35,7 @@ class DbManager:
         return self.session.query(SongEntry).all()
 
     def get_song_by_id(self, id):
-        return self.session.query(SongEntry).filter(SongEntry.id == id).options(undefer('audio_path')).first()
+        return self.session.query(SongEntry).filter(SongEntry.id == id).first()
 
     def get_songs_by_name(self, name):
         return self.session.query(SongEntry).filter(SongEntry.title == name).all()

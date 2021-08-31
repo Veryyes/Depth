@@ -30,10 +30,14 @@ class SongEntry(Base):
         return lyrics_data
 
     def audio_data(self):
-        if not os.path.exists(self.audio_path):
-            raise IOError("Audio File Does not Exist: {}".format(self.audio_path))
+        audio_path = self.audio_path
+        return self._audio_data(audio_path)
 
-        with open(self.audio_path, 'rb') as f:
+    def _audio_data(self, audio_path):
+        if not os.path.exists(audio_path):
+            raise IOError("Audio File Does not Exist: {}".format(audio_path))
+
+        with open(audio_path, 'rb') as f:
             audio_data = f.read(READ_SIZE)
             yield audio_data
 
