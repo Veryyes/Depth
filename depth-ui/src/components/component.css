@@ -3,7 +3,7 @@
 }
 
 .song-button {
-  background-color: white;
+  background-color: #ffffff;
   border: 2px solid #e679dc;
   font-size: 18px;
   padding: 16px 10px;
@@ -11,8 +11,29 @@
   height: 50px;
   margin: 0px;
   transition-duration: 0.3s;
+
+  display: flex;
+  justify-content: space-between;
 }
 
 .song-button:hover {
   background-color: #e1e0e4;
+  cursor: pointer;
+}
+
+.add-to-queue {
+  all: unset;
+  cursor: pointer;
+}
+.add-to-queue:hover {
+  color: #e679dc;
+}
+
+.lobby-button {
+  cursor: pointer;
+  background-color: #28a745;
+  width: 250px;
+  padding: 9px;
+  font-size: 24px;
+  color: #ffffff;
 }

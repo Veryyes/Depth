@@ -1,3 +1,6 @@
 __pycache__/*
 hist.json
 configs.json
+
+# song info
+*.mp3

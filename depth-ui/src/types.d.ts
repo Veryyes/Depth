@@ -3,6 +3,5 @@ export interface Song {
   artist: string;
   genre: string;
   rating: number;
-  lyrics_path: string;
-  file_name: string;
+  lyrics_data: Record<string, unknown>;
 }

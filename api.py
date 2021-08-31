@@ -1,7 +1,7 @@
 from configuration import DB
 import json
 
-from flask import Blueprint, request, make_response, stream_with_context, abort
+from flask import Blueprint, request, make_response, stream_with_context, abort, current_app
 
 from DbManager import DbManager
 
@@ -30,7 +30,7 @@ class DepthResponse:
 INVALID_LOBBY_UUID_RES = (DepthResponse(DepthResponse.ERROR, message="Invalid Lobby UUID").to_json(), 400)
 
 # Lobby Support
-@api.route('/api/lobby/', methods=['POST'])
+@api.route('/api/lobby', methods=['POST'])
 def handle_lobby():
     '''
     Generates a new lobby and returns the UUID of the newly created lobby
@@ -53,8 +53,8 @@ def handle_lobby():
     abort(404)
 
 # TODO Test
-@api.route('/api/lobby/<str:lobby_uuid>')
-def join_lobby(lobby_uuid): 
+@api.route('/api/lobby/<string:lobby_uuid>')
+def join_lobby(lobby_uuid):
     '''
     "Joins" the lobby. i.e. sets the lobby_token cookie to the lobby uuid so future API requests are accepted
     '''
@@ -80,7 +80,7 @@ def song_queue():
         queue = lobby.song_queue.view()
         with DbManager(DB) as db:
             queue = [db.get_song_by_id(song_id).to_dict() for song_id in queue]
-        
+
         return DepthResponse(DepthResponse.SUCC, data=queue).to_json(), 200
 
     elif request.method == 'POST': # TODO Test
@@ -94,7 +94,7 @@ def song_queue():
                     errors.append(song_id)
                 else:
                     lobby.song_queue.put(song)
-        
+
         if len(errors) == len(song_ids):
             return DepthResponse(DepthResponse.ERROR, message="Unable to queue songs", data=errors).to_json(), 300
         if len(errors) > 0:
@@ -114,7 +114,7 @@ def search():
 
 # Song Data
 # TODO Test
-@api.route('/api/song/<int:id>/metadata')
+@api.route('/api/songs/<int:id>/metadata')
 def song_metadata(id):
     '''
     Queries the metadata of a song given the id and returns it
@@ -122,19 +122,20 @@ def song_metadata(id):
     with DbManager(DB) as db:
         song = db.get_song_by_id(id)
 
-    if song is None:
-        return DepthResponse(DepthResponse.ERROR, message="Invalid song ID", data=id).to_json(), 300
-    
-    song_dict = song.to_dict()
-    song_dict['lyrics_data'] = song.lyrics_data()
-    # Good practice to not leak things about the filesystem to random users
-    del song_dict['lyrics_path']
-    del song_dict['audio_path']
+        if song is None:
+            return DepthResponse(DepthResponse.ERROR, message="Invalid song ID", data=id).to_json(), 300
 
-    return DepthResponse(DepthResponse.SUCC, data=song_dict).to_json, 200
+        print(song)
+        song_dict = song.to_dict()
+        song_dict['lyrics_data'] = song.lyrics_data()
+        # Good practice to not leak things about the filesystem to random users
+        del song_dict['lyrics_path']
+        del song_dict['audio_path']
+
+    return DepthResponse(DepthResponse.SUCC, data=song_dict).to_json(), 200
 
 # TODO Test
-@api.route('/api/song/<int:id>/data')
+@api.route('/api/songs/<int:id>/data')
 def song_data(id):
     '''
     Queries the audio of a song given the id and streams it
@@ -144,5 +145,5 @@ def song_data(id):
 
         if song is None:
             return DepthResponse(DepthResponse.ERROR, message="Invalid song ID", data=id).to_json(), 300
-        
-        return api.response_class(stream_with_context(song.audio_data()))
+
+        return current_app.response_class(stream_with_context(song.audio_data()))

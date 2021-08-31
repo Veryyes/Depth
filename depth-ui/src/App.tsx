@@ -1,29 +1,33 @@
 import * as React from 'react';
 import logo from './karaoke_logo.jpg';
 import './App.css';
-import SongPlayer from './components/SongPlayer';
-import SongList from './components/SongList';
+import Lobby from './components/Lobby';
+import { createLobby } from './api';
 
 export default function App() {
-  const [currSongJson, setCurrSongJson] = React.useState({});
+  const [inLobby, setInLobby] = React.useState(false);
 
-  function renderPlayer() {
-    if (Object.keys(currSongJson).length > 0) {
-      return <SongPlayer songJson={currSongJson} />;
-    }
-    return <h3>Please select a song to sing &lt;3</h3>;
+  async function handleCreateLobby() {
+    await createLobby();
+    setInLobby(true);
   }
 
   return (
     <div className="App">
-      <header className="App-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px', margin: '15px' }}>
+      {inLobby ? (
+        <Lobby />
+      ) : (
+        <>
+        <div className="App-top-content">
           <img src={logo} className="App-logo" alt="logo" />
-          <SongList loadSongData={setCurrSongJson} />
+          </div>
+          <div className="App-bottom-content">
+          <button className="lobby-button" onClick={handleCreateLobby}>Create lobby</button>
+          <br/>
+          <button className="lobby-button">Join lobby</button>
         </div>
-
-        {renderPlayer()}
-      </header>
+        </>
+      )}
     </div>
   );
 }

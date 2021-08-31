@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { downloadAudio } from 'src/api';
 
 export default function SongPlayer({ songJson }: { songJson: Record<string, any> }) {
   const audioRef = React.useRef<HTMLAudioElement>(null);
@@ -7,7 +8,7 @@ export default function SongPlayer({ songJson }: { songJson: Record<string, any>
   const [showLyrics, setShowLyrics] = React.useState('...');
   const [showNextLine, setShowNextLine] = React.useState('...');
 
-  const lyricsMap = songJson['mapping'];
+  const lyricsMap = songJson['lyrics_data'];
 
   function updateTime() {
     if (audioRef && audioRef.current) {
@@ -16,24 +17,29 @@ export default function SongPlayer({ songJson }: { songJson: Record<string, any>
   }
 
   React.useEffect(() => {
-    setSongURI(`${process.env.PUBLIC_URL}/${songJson.file_name}`);
-    setTimeElapsed(0);
-    if (audioRef.current) {
-      audioRef.current.load();
+    async function streamSong() {
+      console.log('beginning stream...');
+      const songData = await downloadAudio(1);
     }
+    streamSong();
+    // setSongURI(`${process.env.PUBLIC_URL}/${songJson.file_name}`);
+    // setTimeElapsed(0);
+    // if (audioRef.current) {
+    //   audioRef.current.load();
+    // }
   }, [songJson]);
 
-  React.useEffect(() => {
-    for (const [i, lyricObj] of lyricsMap.entries()) {
-      if (timeElapsed >= lyricObj.start && timeElapsed < lyricObj.end) {
-        setShowLyrics(lyricObj.lyrics);
-        setShowNextLine(lyricsMap[i + 1]?.lyrics ?? '...');
-        break;
-      } else {
-        setShowLyrics('...');
-      }
-    }
-  }, [lyricsMap, timeElapsed]);
+  // React.useEffect(() => {
+  //   for (const [i, lyricObj] of lyricsMap.entries()) {
+  //     if (timeElapsed >= lyricObj.start && timeElapsed < lyricObj.end) {
+  //       setShowLyrics(lyricObj.lyrics);
+  //       setShowNextLine(lyricsMap[i + 1]?.lyrics ?? '...');
+  //       break;
+  //     } else {
+  //       setShowLyrics('...');
+  //     }
+  //   }
+  // }, [lyricsMap, timeElapsed]);
 
   return (
     <div>
